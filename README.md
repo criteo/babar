@@ -116,3 +116,15 @@ You can adjuste the reserved memory value for mappers and reducers independently
 ### Distribute the jar programmatically
 
 You will find an example on how to distribute an agent jar to all the containers whemn starting the application and instrument a job in the `babar-scalding` module.
+
+## Using with Hive
+
+Similarly to Spark, hive allows to easily distribute the jar to the executors. To profile a Hive application, simply execute the following commands:
+
+```
+ADD FILE /home/b.hanotte/babar-agent-1.0-SNAPSHOT.jar;
+
+SET mapreduce.map.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=2560],CPUTimeProfiler[profilingMs=5000]";
+
+SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=3684],CPUTimeProfiler[profilingMs=5000]";
+```
