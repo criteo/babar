@@ -20,7 +20,7 @@ Table of Contents
 
 Babar is a profiler for java applications developed to **profile large-scale distributed applications such as Spark, Scalding, MapReduce or Hive programs**.
 
-Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual JVM and then aggregate them over the entire application to produce ready-to-use graphs of the resources-usage and method calls (as flame-graphs) of the program as shown in the screenshots section below.
+Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual JVM and then aggregate them over the entire application to produce ready-to-use graphs of the resource usage and method calls (as flame-graphs) of the program as shown in the screenshots section below.
 
 Currently babar is designed to **profile YARN applications**, but could be extended in order to profile other types of applications.
 
@@ -43,7 +43,7 @@ Once the **babar-processor** has run, a new directory is created containing two 
 
 ## Babar-agent
 
-the **babar-agent** instuments the JVM to register and log the resources-usage metrics. It is a standard `java-agent` component (see the [instrumentation API doc](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) for more information).
+the **babar-agent** instuments the JVM to register and log the resource usage metrics. It is a standard `java-agent` component (see the [instrumentation API doc](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) for more information).
 
 ### instrumenting the JVM with the agent
 
