@@ -18,7 +18,7 @@ Table of Contents
 
 # BABAR: a profiler for large-scale distributed applications
 
-Babar is a profiler for java applications developped to **profile large-scale distributed applications such as Spark, Scalding, MapReduce or Hive programs**.
+Babar is a profiler for java applications developed to **profile large-scale distributed applications such as Spark, Scalding, MapReduce or Hive programs**.
 
 Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual JVM and then aggregate them over the entire application to produce ready-to-use graphs of the resources-usage and method calls (as flame-graphs) of the program as shown in the screenshots section below.
 
