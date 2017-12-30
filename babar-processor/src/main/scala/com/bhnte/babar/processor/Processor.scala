@@ -34,6 +34,8 @@ object Processor {
     val conf = new Conf(args)
 
     // define aggregations
+    val seconds = conf.timePrecision() / 1000D
+    val MBSec = seconds / 1024D / 1024D
     val allMemoryCpuAggregations = Set(
       SumMaxByContainerAggregation("HEAP_MEMORY_USED_BYTES", conf.timePrecision()),
       MaxAggregation("HEAP_MEMORY_USED_BYTES", conf.timePrecision()),
@@ -45,12 +47,13 @@ object Processor {
       MaxAggregation("OFF_HEAP_MEMORY_COMMITTED_BYTES", conf.timePrecision()),
       SumMaxByContainerAggregation("MEMORY_RESERVED_BYTES", conf.timePrecision()),
       MaxAggregation("MEMORY_RESERVED_BYTES", conf.timePrecision()),
-      SumMaxByContainerAggregation("SYSTEM_AVAILABLE_CPU", conf.timePrecision()),
       MaxAggregation("JVM_SCALED_CPU_USAGE", conf.timePrecision()),
       MedianMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", conf.timePrecision()),
       MaxAggregation("GC_RATIO", conf.timePrecision()),
       MedianMaxByContainerAggregation("GC_RATIO", conf.timePrecision()),
-      CountContainersAggregation("NUM_CONTAINERS", conf.timePrecision())
+      CountContainersAggregation("NUM_CONTAINERS", conf.timePrecision()),
+      AccumulatedMaxByContainerAggregation("MEMORY_RESERVED_BYTES", conf.timePrecision(), MBSec),
+      AccumulatedMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", conf.timePrecision(), seconds)
     )
 
     val allTracesAggregations = Set(
@@ -127,6 +130,7 @@ trait TimeValueByContainerAggregation[A_CONT, A_ALL, V] extends Aggregation[Vect
   // Map(container -> Map(time -> value))
   protected val map = mutable.Map.empty[String, mutable.Map[Long, A_CONT]]
 
+  def multiplier: Double
   def applies(g: Gauge): Boolean
   def timePrecision: Long
   def valueToV(v: Double): V
@@ -144,7 +148,7 @@ trait TimeValueByContainerAggregation[A_CONT, A_ALL, V] extends Aggregation[Vect
       // get the map for the current container
       val cmap = map.getOrElse(g.container, mutable.Map.empty[Long, A_CONT])
       val acc = cmap.getOrElse(t, zeroByContainer)
-      val v = valueToV(g.value)
+      val v = valueToV(g.value * multiplier)
       cmap.put(t, foldByContainer(acc, v))
       // update the container map
       map.put(g.container, cmap)
@@ -171,7 +175,7 @@ trait TimeValueByContainerAggregation[A_CONT, A_ALL, V] extends Aggregation[Vect
   }
 }
 
-case class SumMaxByContainerAggregation(metric: String, timePrecision: Long)
+case class SumMaxByContainerAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, Double, Double] {
   override def name: String = metric+"(sum)"
   override def applies(g: Gauge): Boolean = g.metric == metric
@@ -184,7 +188,7 @@ case class SumMaxByContainerAggregation(metric: String, timePrecision: Long)
   override def aggOverAllContainersToValue(agg: Double): Double = agg
 }
 
-case class AvgMaxByContainerAggregation(metric: String, timePrecision: Long)
+case class AvgMaxByContainerAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, (Long, Double), Double] {
   override def name: String = metric+"(avg)"
   override def applies(g: Gauge): Boolean = g.metric == metric
@@ -198,7 +202,7 @@ case class AvgMaxByContainerAggregation(metric: String, timePrecision: Long)
   override def aggOverAllContainersToValue(acc: (Long, Double)): Double = acc._2 / acc._1
 }
 
-case class MedianMaxByContainerAggregation(metric: String, timePrecision: Long)
+case class MedianMaxByContainerAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, mutable.Buffer[Double], Double] {
   override def name: String = metric+"(med)"
   override def applies(g: Gauge): Boolean = g.metric == metric
@@ -219,7 +223,29 @@ case class MedianMaxByContainerAggregation(metric: String, timePrecision: Long)
   }
 }
 
-case class MaxAggregation(metric: String, timePrecision: Long)
+case class AccumulatedMaxByContainerAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
+  extends TimeValueByContainerAggregation[Double, Double, Double] {
+  override def name: String = metric+"(accumulated)"
+  override def applies(g: Gauge): Boolean = g.metric == metric
+  override def valueToV(v: Double): Double = v
+  override def zeroByContainer: Double = 0D
+  override def foldByContainer(acc: Double, v: Double): Double = math.max(acc, v)
+  override def zeroOverAllContainers: Double = 0D
+  override def foldOverAllContainers(acc: Double, v: Double): Double = acc + v
+  override def aggByContainerToValue(agg: Double): Double = agg
+  //average over the max of all containers
+  override def aggOverAllContainersToValue(acc: Double): Double = acc
+
+  override def get: Vector[(Long, Double)] = {
+    val sortedBeforeAccumulated = super.get
+    // accumulate the values in order to get the integral values
+    sortedBeforeAccumulated.scanLeft((0L, zeroOverAllContainers)){
+      case ((prevT, prev), (t, v)) => (t, prev + v)
+    }.drop(1) // remove zero
+  }
+}
+
+case class MaxAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, Double, Double] {
   override def name: String = metric+"(max)"
   override def applies(g: Gauge): Boolean = g.metric == metric
@@ -232,7 +258,7 @@ case class MaxAggregation(metric: String, timePrecision: Long)
   override def aggOverAllContainersToValue(agg: Double): Double = agg
 }
 
-case class CountContainersAggregation(name: String, timePrecision: Long)
+case class CountContainersAggregation(name: String, timePrecision: Long, multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, Double, Double] {
 
   override def valueToV(v: Double): Double = v

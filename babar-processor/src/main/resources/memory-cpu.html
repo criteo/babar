@@ -24,6 +24,8 @@
     <div id="max-committed-memory" class="plot"></div>
     <div id="used-cpu" class="plot"></div>
     <div id="gc-ratio" class="plot"></div>
+    <div id="accumulated-memory-sec" class="plot"></div>
+    <div id="accumulated-cpu-sec" class="plot"></div>
 
     <script type="text/javascript">
         const data = {{DATA}}
@@ -83,6 +85,22 @@
             ["GC_RATIO(max)", "GC_RATIO(med)"],
             [],
             "gc-ratio"
+        )
+        plot(
+            "Accumulated Reserved Memory (megabytes seconds)",
+            "MBs",
+            data,
+            ["MEMORY_RESERVED_BYTES(accumulated)"],
+            [],
+            "accumulated-memory-sec"
+        )
+        plot(
+            "Accumulated CPU Seconds",
+            "cpu seconds",
+            data,
+            ["JVM_SCALED_CPU_USAGE(accumulated)"],
+            [],
+            "accumulated-cpu-sec"
         )
 
         function plot(title, yAxisTitle, json, bgMetrics, stackedMetrics, divId) {
