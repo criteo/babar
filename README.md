@@ -1,13 +1,32 @@
+Table of Contents
+=================
+
+   * [BABAR: a profiler for large-scale distributed applications](#babar-a-profiler-for-large-scale-distributed-applications)
+      * [Screenshots](#screenshots)
+      * [How it works](#how-it-works)
+      * [Babar-agent](#babar-agent)
+         * [instrumenting the JVM with the agent](#instrumenting-the-jvm-with-the-agent)
+         * [Available profilers](#available-profilers)
+      * [Babar-processor](#babar-processor)
+         * [Usage](#usage)
+      * [Using with Spark](#using-with-spark)
+      * [Using with Scalding](#using-with-scalding)
+         * [If the jar is already available on the nodes](#if-the-jar-is-already-available-on-the-nodes)
+         * [Distribute the jar programmatically](#distribute-the-jar-programmatically)
+      * [Using with Hive](#using-with-hive)
+
 # BABAR: a profiler for large-scale distributed applications
 
 Babar is a profiler for java applications developped to **make profiling large-scale distributed applications easier**.
 
-Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual JVM and then aggregate them over the entire application to produce ready-to-use graphs of the resources-usage and method calls (as flame-graphs) of the program as shown in the screenshots below:
+Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual JVM and then aggregate them over the entire application to produce ready-to-use graphs of the resources-usage and method calls (as flame-graphs) of the program as shown in the screenshots section below.
+
+Currently babar is designed to **profile YARN applications such as Spark Scalding or Hive jobs,** but could be extended in order to profile other types of applications.
+
+## Screenshots
 
 ![memory-cpu](/babar-doc/memory-cpu.png)
 ![traces](/babar-doc/traces.png)
-
-Currently babar is designed to **profile YARN applications such as Spark Scalding or Hive jobs,** but could be extended in order to profile other types of applications.
 
 ## How it works
 
@@ -21,7 +40,7 @@ The **babar-processor** is the piece of software responsible for parsing the agg
 
 Once the **babar-processor** has run, a new directory is created containing two HTML files containing the graphs (memory, CPU usage, GC usage, executor counts, flame-graphs,...).
 
-## babar-agent
+## Babar-agent
 
 the **babar-agent** instuments the JVM to register and log the resources-usage metrics. It is a standard `java-agent` component (see the [instrumentation API doc](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) for more information).
 
@@ -47,7 +66,7 @@ the profilers can be added and configured using this command line. The profilers
 
 - `StackTraceProfiler`: This profilers registers the stach traces of all `RUNNABLE` threads at regular intervals (the `profilingMs` options) and logs them at another interval (the `reportingMs` option) in order to aggregate multiple traces before logging them to save space in the logs. The traces are always logged at the JVM shutdown so one can set the repoting interval very high in order to save the most space in the logs if they are not interested in having traces logged in case the JVM is killed or fails.
 
-## babar-processor
+## Babar-processor
 
 The **babar-processor** is the piece of software that parses the logs and aggregates the metrics into graphs.
 
