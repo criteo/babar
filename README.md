@@ -111,8 +111,8 @@ No code changes are required to instrument a Spark job since Spark allows to dis
 In order to instrument your Spark application, simply add these arguments to your `spark-submit` command:
 
 ```
-    --files ./babar-agent-1.0-SNAPSHOT.jar 
-    --conf spark.executor.extraJavaOptions="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=7175],CPUTimeProfiler[profilingMs=5000]"
+--files ./babar-agent-1.0-SNAPSHOT.jar 
+--conf spark.executor.extraJavaOptions="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=7175],CPUTimeProfiler[profilingMs=5000]"
 ``` 
 
 You can adjust the reserved memory setting according to the `spark.executor.memory + spark.yarn.executor.memoryOverhead`.
