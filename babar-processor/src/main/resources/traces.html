@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Traces</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.0/d3.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@1.0.4/dist/d3.flameGraph.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/spiermar/d3-flame-graph@1.0.4/dist/d3.flameGraph.min.css"><style type="text/css">
+        body {
+            /* avoid flame graph tips issue */
+            overflow-x: hidden;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div id="graph" style="width: 100%; height: 100%"></div>
+
+    <script type="text/javascript">
+        const data = {{DATA}}
+
+        renderFlameGraph(data["CPU_TRACES(traces)"], "graph")
+
+        function renderFlameGraph(root, divId) {
+            var tip = d3.tip()
+                .attr('class', 'd3-flame-graph-tip')
+                .html(function(node) {
+                    return node.data.name +
+                        " (samples: " + node.value + ", " +
+                        ((node.x1 - node.x0)*100).toFixed(1) + "%)";
+                })
+                .direction(function (d) {
+                    var upper = d.y0 >= 0.5
+                    var left = d.x0 <= 0.5
+                    var right = d.x1 >= 0.5
+
+                    if (upper) {
+                        if (left && right) return 's'
+                        else if (left) return 'e'
+                        else if (right) return 'w'
+                    }
+                    else {
+                        if (left && right) return 'n'
+                        else if (left) return 'e'
+                        else if (right) return 'w'
+                    }
+                })
+
+            const flamegraph = d3.flameGraph()
+                .width(0.98*$("#"+divId).innerWidth())
+                .tooltip(tip);
+
+            d3.select("#"+divId)
+                .datum(root)
+                .call(flamegraph);
+        }
+
+    </script>
+</body>
+</html>

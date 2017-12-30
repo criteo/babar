@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory & CPU</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@3.8.5/dist/echarts.js"></script>
+    <style type="text/css">
+        .plot {
+            margin-top: 20px;
+            border-bottom: 1px dashed #aaaaaa;
+            width: 100%; 
+            height: 460px
+        }
+    </style>
+</head>
+<body>
+
+    <div id="num-containers" class="plot"></div>
+    <div id="used-memory" class="plot"></div>
+    <div id="committed-memory" class="plot"></div>
+    <div id="max-used-memory" class="plot"></div>
+    <div id="max-committed-memory" class="plot"></div>
+    <div id="used-cpu" class="plot"></div>
+    <div id="gc-ratio" class="plot"></div>
+
+    <script type="text/javascript">
+        const data = {{DATA}}
+
+        plot(
+            "Number of containers",
+            "containers",
+            data,
+            ["NUM_CONTAINERS"],
+            [],
+            "num-containers"
+        )
+        plot(
+            "Used memory",
+            "Memory bytes",
+            data,
+            ["MEMORY_RESERVED_BYTES(sum)"],
+            ["HEAP_MEMORY_USED_BYTES(sum)", "OFF_HEAP_MEMORY_USED_BYTES(sum)"],
+            "used-memory"
+        )
+        plot(
+            "Committed memory",
+            "Memory bytes",
+            data,
+            ["MEMORY_RESERVED_BYTES(sum)"],
+            ["HEAP_MEMORY_COMMITTED_BYTES(sum)", "OFF_HEAP_MEMORY_COMMITTED_BYTES(sum)"],
+            "committed-memory"
+        )
+        plot(
+            "Max used memory for a container",
+            "Memory bytes",
+            data,
+            ["MEMORY_RESERVED_BYTES(max)"],
+            ["HEAP_MEMORY_USED_BYTES(max)", "OFF_HEAP_MEMORY_USED_BYTES(max)"],
+            "max-used-memory"
+        )
+        plot(
+            "Max committed memory for a container",
+            "Memory bytes",
+            data,
+            ["MEMORY_RESERVED_BYTES(max)"],
+            ["HEAP_MEMORY_COMMITTED_BYTES(max)", "OFF_HEAP_MEMORY_COMMITTED_BYTES(max)"],
+            "max-committed-memory"
+        )
+        plot(
+            "CPU Usage (# used cores)",
+            "used cores",
+            data,
+            ["JVM_SCALED_CPU_USAGE(max)", "JVM_SCALED_CPU_USAGE(med)"],
+            [],
+            "used-cpu"
+        )
+        plot(
+            "GC usage",
+            "GC usage",
+            data,
+            ["GC_RATIO(max)", "GC_RATIO(med)"],
+            [],
+            "gc-ratio"
+        )
+
+        function plot(title, yAxisTitle, json, bgMetrics, stackedMetrics, divId) {
+            const myChart = echarts.init(document.getElementById(divId));
+            const allMetrics = bgMetrics.concat(stackedMetrics)
+            // draw chart
+            myChart.setOption({
+              title: {
+                text: title,
+                x: 'center'
+              },
+              tooltip : {
+                trigger: 'axis'
+              },
+              legend: {
+                data: allMetrics,
+                top: '5%'
+              },
+              grid: {
+                left: '120px',
+                right: '40px',
+                top: '60px',
+                bottom: '50px',
+                containLabel: false
+              },
+              xAxis: {
+                type: 'time'
+              },
+              yAxis: {
+                type: 'value',
+                name: yAxisTitle
+              },
+              series: allMetrics.map(m => ({
+                name: m,
+                type: 'line',
+                symbolSize: 6,
+                hoverAnimation: false,
+                stack: _.includes(stackedMetrics, m) ? true : false,
+                areaStyle: {normal: {opacity: 1}},
+                data: _.zip(json.time, json.metrics[m]).map(v => ({value: v}))
+              }))
+            });
+        }
+    </script>
+</body>
+</html>
