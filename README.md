@@ -1,6 +1,7 @@
 Table of Contents
 =================
 
+   * [Table of Contents](#table-of-contents)
    * [BABAR: a profiler for large-scale distributed applications](#babar-a-profiler-for-large-scale-distributed-applications)
       * [Screenshots](#screenshots)
       * [How it works](#how-it-works)
@@ -10,7 +11,7 @@ Table of Contents
       * [Babar-processor](#babar-processor)
          * [Usage](#usage)
       * [Using with Spark](#using-with-spark)
-      * [Using with Scalding](#using-with-scalding)
+      * [Using with Scalding and MapReduce](#using-with-scalding-and-mapreduce)
          * [If the jar is already available on the nodes](#if-the-jar-is-already-available-on-the-nodes)
          * [Distribute the jar programmatically](#distribute-the-jar-programmatically)
       * [Using with Hive](#using-with-hive)
@@ -119,7 +120,7 @@ You can adjust the reserved memory setting according to the `spark.executor.memo
 
 You can then use the `yarn logs` command to get the aggregated log file and process the logs using the **babar-processor**.
 
-## Using with Scalding
+## Using with Scalding and MapReduce
 
 ### If the jar is already available on the nodes
 
