@@ -84,3 +84,35 @@ The processor accepts the following arguments:
 ```
 
 In the output dir (by default `./output`), two HTML files containing the graph will be generated: `memory-cpu.html` and `traces.html`.
+
+## Using with Spark
+
+No code changes are required to instrument a Spark job since Spark allows to distribute the agent jar archive to all containers using the `--files` command argument.
+
+In order to instrument your Spark application, simply add these arguments to your `spark-submit` command:
+
+```
+    --files ./babar-agent-1.0-SNAPSHOT.jar 
+    --conf spark.executor.extraJavaOptions="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=7175],CPUTimeProfiler[profilingMs=5000]"
+``` 
+
+You can adjust the reserved memory setting according to the `spark.executor.memory + spark.yarn.executor.memoryOverhead`.
+
+You can then use the `yarn logs` command to get the aggregated log file and process the logs using the **babar-processor**.
+
+## Using with Scalding
+
+### If the jar is already available on the nodes
+
+If the jar is already distributed on your nodes at `/path/to/babar-agent-1.0-SNAPSHOT.jar`, then you only need to add some command line arguments to your Scalding application command as below:
+
+```
+-Dmapreduce.map.java.opts="-javaagent:/path/to/babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=2500],CPUTimeProfiler[profilingMs=5000]"
+-Dmapreduce.reduce.java.opts="-javaagent:/path/to/babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=3500],CPUTimeProfiler[profilingMs=5000]"
+```
+
+You can adjuste the reserved memory value for mappers and reducers independently. This value can also be programmatically determined. You will find an example on how to instrument a job to determine these values and set the configuration programmatically in the `babar-scalding` module.
+
+### Distribute the jar programmatically
+
+You will find an example on how to distribute an agent jar to all the containers whemn starting the application and instrument a job in the `babar-scalding` module.
