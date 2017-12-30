@@ -17,7 +17,7 @@ public class LogReporter extends Reporter {
     private final JsonFormat.Printer formatter = JsonFormat.printer().includingDefaultValueFields();
     private final String LINE_PREFIX = "BABAR_METRIC\t";
 
-    private static final String yarnLogDir = System.getProperty("yarn.app.container.log.dir");
+    private static final String logDir = getLogDir();
     private BufferedWriter bw = null;
     private FileWriter fw = null;
 
@@ -28,7 +28,7 @@ public class LogReporter extends Reporter {
     @Override
     public void start() {
         try {
-            fw = new FileWriter(yarnLogDir+"/babar.log");
+            fw = new FileWriter(logDir +"/babar.log");
             bw = new BufferedWriter(fw);
             bw.newLine();
         }
@@ -69,5 +69,12 @@ public class LogReporter extends Reporter {
         catch (Exception e) {
             logger.error("Error logging metric", e);
         }
+    }
+
+    static private String getLogDir() {
+        String logDir = System.getProperty("yarn.app.container.log.dir");
+        if (logDir == null) logDir = System.getProperty("spark.yarn.app.container.log.dir");
+        if (logDir == null) logDir = "./log";
+        return logDir;
     }
 }
