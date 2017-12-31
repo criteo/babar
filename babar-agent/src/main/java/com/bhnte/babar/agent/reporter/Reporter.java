@@ -24,7 +24,7 @@ public abstract class Reporter {
 
     protected String getContainerId() {
         try {
-            String hostname = InetAddress.getLocalHost().getHostName().replaceAll("\\.", "-");
+            String hostname = InetAddress.getLocalHost().getHostName();
             return hostname + "_" + String.valueOf(Math.round(Math.random() * 10000));
         } catch (UnknownHostException e) {
             System.err.println("Unable to get the hostname, using random value instead");
