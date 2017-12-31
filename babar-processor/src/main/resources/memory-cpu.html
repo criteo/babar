@@ -87,18 +87,18 @@
             "gc-ratio"
         )
         plot(
-            "Accumulated Reserved Memory (megabytes seconds)",
+            "Accumulated Memory (megabytes seconds)",
             "MBs",
             data,
             ["MEMORY_RESERVED_BYTES(accumulated)"],
-            [],
+            ["HEAP_MEMORY_USED_BYTES(accumulated)", "OFF_HEAP_MEMORY_USED_BYTES(accumulated)"],
             "accumulated-memory-sec"
         )
         plot(
             "Accumulated CPU Seconds",
             "cpu seconds",
             data,
-            ["JVM_SCALED_CPU_USAGE(accumulated)"],
+            ["JVM_SCALED_CPU_USAGE(accumulated)", "GC_TIME_MS(accumulated)"],
             [],
             "accumulated-cpu-sec"
         )

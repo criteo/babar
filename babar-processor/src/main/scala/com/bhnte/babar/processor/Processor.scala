@@ -34,26 +34,31 @@ object Processor {
     val conf = new Conf(args)
 
     // define aggregations
-    val seconds = conf.timePrecision() / 1000D
-    val MBSec = seconds / 1024D / 1024D
+    val timePrecMs = conf.timePrecision()
+    val timePrecSec = timePrecMs / 1000D
+    val MBSec = timePrecSec / 1024D / 1024D
     val allMemoryCpuAggregations = Set(
-      SumMaxByContainerAggregation("HEAP_MEMORY_USED_BYTES", conf.timePrecision()),
-      MaxAggregation("HEAP_MEMORY_USED_BYTES", conf.timePrecision()),
-      SumMaxByContainerAggregation("OFF_HEAP_MEMORY_USED_BYTES", conf.timePrecision()),
-      MaxAggregation("OFF_HEAP_MEMORY_USED_BYTES", conf.timePrecision()),
-      SumMaxByContainerAggregation("HEAP_MEMORY_COMMITTED_BYTES", conf.timePrecision()),
-      MaxAggregation("HEAP_MEMORY_COMMITTED_BYTES", conf.timePrecision()),
-      SumMaxByContainerAggregation("OFF_HEAP_MEMORY_COMMITTED_BYTES", conf.timePrecision()),
-      MaxAggregation("OFF_HEAP_MEMORY_COMMITTED_BYTES", conf.timePrecision()),
-      SumMaxByContainerAggregation("MEMORY_RESERVED_BYTES", conf.timePrecision()),
-      MaxAggregation("MEMORY_RESERVED_BYTES", conf.timePrecision()),
-      MaxAggregation("JVM_SCALED_CPU_USAGE", conf.timePrecision()),
-      MedianMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", conf.timePrecision()),
-      MaxAggregation("GC_RATIO", conf.timePrecision()),
-      MedianMaxByContainerAggregation("GC_RATIO", conf.timePrecision()),
-      CountContainersAggregation("NUM_CONTAINERS", conf.timePrecision()),
-      AccumulatedMaxByContainerAggregation("MEMORY_RESERVED_BYTES", conf.timePrecision(), MBSec),
-      AccumulatedMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", conf.timePrecision(), seconds)
+      SumMaxByContainerAggregation("HEAP_MEMORY_USED_BYTES", timePrecMs),
+      MaxAggregation("HEAP_MEMORY_USED_BYTES", timePrecMs),
+      SumMaxByContainerAggregation("OFF_HEAP_MEMORY_USED_BYTES", timePrecMs),
+      MaxAggregation("OFF_HEAP_MEMORY_USED_BYTES", timePrecMs),
+      SumMaxByContainerAggregation("HEAP_MEMORY_COMMITTED_BYTES", timePrecMs),
+      MaxAggregation("HEAP_MEMORY_COMMITTED_BYTES", timePrecMs),
+      SumMaxByContainerAggregation("OFF_HEAP_MEMORY_COMMITTED_BYTES", timePrecMs),
+      MaxAggregation("OFF_HEAP_MEMORY_COMMITTED_BYTES", timePrecMs),
+      SumMaxByContainerAggregation("MEMORY_RESERVED_BYTES", timePrecMs),
+      MaxAggregation("MEMORY_RESERVED_BYTES", timePrecMs),
+      MaxAggregation("JVM_SCALED_CPU_USAGE", timePrecMs),
+      MedianMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", timePrecMs),
+      MaxAggregation("GC_RATIO", timePrecMs),
+      MedianMaxByContainerAggregation("GC_RATIO", timePrecMs),
+      CountContainersAggregation("NUM_CONTAINERS", timePrecMs),
+      AccumulatedMaxByContainerAggregation("MEMORY_RESERVED_BYTES", timePrecMs, MBSec),
+      AccumulatedMaxByContainerAggregation("HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
+      AccumulatedMaxByContainerAggregation("OFF_HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
+      AccumulatedMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", timePrecMs, timePrecSec),
+      AccumulatedMaxByContainerAggregation("GC_TIME_MS", timePrecMs, 1D / 1000D)
+
     )
 
     val allTracesAggregations = Set(
