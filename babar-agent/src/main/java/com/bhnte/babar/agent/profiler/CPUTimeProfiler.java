@@ -46,8 +46,8 @@ public class CPUTimeProfiler extends SamplingProfiler {
         double deltaGcTime = (double)updateGCTimeAndGetDelta();
         double gcRatio = deltaGcTime / deltaThreadsCpuTime;
 
-        reporter.reportEvent("GC_TIME_MS", "", deltaGcTime, sampleTimeMs);
         reporter.reportEvent("GC_RATIO", "", gcRatio, sampleTimeMs);
+        reporter.reportEvent("GC_SCALED_CPU_USAGE", "", gcRatio * cpuUsage, sampleTimeMs);
         reporter.reportEvent("JVM_CPU_USAGE", "", cpuUsage / availableCpu, sampleTimeMs);
         reporter.reportEvent("JVM_SCALED_CPU_USAGE", "", cpuUsage, sampleTimeMs);
         reporter.reportEvent("SYSTEM_CPU_LOAD", "", systemCpuLoad, sampleTimeMs);

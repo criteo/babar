@@ -57,7 +57,7 @@ object Processor {
       AccumulatedMaxByContainerAggregation("HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
       AccumulatedMaxByContainerAggregation("OFF_HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
       AccumulatedMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", timePrecMs, timePrecSec),
-      AccumulatedMaxByContainerAggregation("GC_TIME_MS", timePrecMs, 1D / 1000D)
+      AccumulatedMaxByContainerAggregation("GC_SCALED_CPU_USAGE", timePrecMs, timePrecSec)
 
     )
 
