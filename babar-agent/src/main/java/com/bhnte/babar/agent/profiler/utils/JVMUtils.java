@@ -11,7 +11,13 @@ import java.util.Map;
 
 import com.sun.management.OperatingSystemMXBean;
 
+import javax.management.NotificationEmitter;
+import javax.management.NotificationListener;
+
 public class JVMUtils {
+
+    public static String MINOR_GC_ACTION = "end of minor GC";
+    public static String MAJOR_GC_ACTION = "end of major GC";
 
     private static final OperatingSystemMXBean operatingSystemMXBean = (com.sun.management.OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
     private static final RuntimeMXBean runtimeMXBean = java.lang.management.ManagementFactory.getRuntimeMXBean();
@@ -53,5 +59,15 @@ public class JVMUtils {
             gcTime += bean.getCollectionTime();
         }
         return gcTime;
+    }
+
+    /**
+     * Register to all notifications from the GC MXBeans.
+     * @param listener          A java NotificationListener
+     */
+    public static void registerGCListener(NotificationListener listener) {
+        for (GarbageCollectorMXBean bean: ManagementFactory.getGarbageCollectorMXBeans()) {
+            ((NotificationEmitter)bean).addNotificationListener(listener, null, null);
+        }
     }
 }

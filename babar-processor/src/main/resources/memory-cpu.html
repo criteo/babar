@@ -24,6 +24,7 @@
     <div id="max-committed-memory" class="plot"></div>
     <div id="used-cpu" class="plot"></div>
     <div id="gc-ratio" class="plot"></div>
+    <div id="max-minor-major-gc-ratio" class="plot"></div>
     <div id="accumulated-memory-sec" class="plot"></div>
     <div id="accumulated-cpu-sec" class="plot"></div>
 
@@ -85,6 +86,14 @@
             ["GC_RATIO(max)", "GC_RATIO(med)"],
             [],
             "gc-ratio"
+        )
+        plot(
+            "Minor & Major GC usage",
+            "GC usage",
+            data,
+            [],
+            ["MINOR_GC_RATIO(med)", "MAJOR_GC_RATIO(med)"],
+            "max-minor-major-gc-ratio"
         )
         plot(
             "Accumulated Memory (megabytes seconds)",
