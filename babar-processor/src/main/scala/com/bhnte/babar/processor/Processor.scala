@@ -70,20 +70,18 @@ object Processor {
     )
 
     val allAggregations = allMemoryCpuAggregations ++ allTracesAggregations
+    val containers = conf.containers().split(',').toSet
 
     println("start aggregating...")
-    val stream = FSUtils
+    FSUtils
       .readAsStream(new Path(conf.logFile()))
       .flatMap(tryParseLine)
       .flatMap(_.toOption)
-
-    val containers = conf.containers().split(',').toSet
-    stream
-      .filter{g =>
-        if (containers.isEmpty) true
-        else containers.exists(c => g.container.startsWith(c))
-      }
-      .foreach(g => allAggregations.foreach(agg => agg.process(g)))
+      .foreach(g => {
+        if (containers.isEmpty || containers.exists(c => g.container.startsWith(c))) {
+          allAggregations.foreach(agg => agg.process(g))
+        }
+      })
     println("done aggregating")
 
     println("start writing memory & cpu html...")
