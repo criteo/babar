@@ -65,20 +65,20 @@ public class CPUTimeProfiler extends SamplingProfiler {
     @Override
     public void sample(long sampleTimeMs, long deltaLastSampleMs) throws Exception {
 
-        double deltaThreadsCpuTime = (double)updateThreadsCpuTimeAndGetDelta();
+        double deltaThreadsCpuTime = updateThreadsCpuTimeAndGetDelta();
         // compute CPU usage in number of cores
-        double nonCappedCpuUsage = deltaThreadsCpuTime / deltaLastSampleMs;
+        double nonCappedCpuUsage = deltaLastSampleMs > 0 ? deltaThreadsCpuTime / deltaLastSampleMs : 0;
         double cpuUsage = Math.max(0D, nonCappedCpuUsage);
 
         double systemCpuLoad = JVMUtils.getSystemCPULoad();
 
-        double deltaGcTime = (double)updateGCTimeAndGetDelta();
+        double deltaGcTime = updateGCTimeAndGetDelta();
 
         double sampleMinorGCTime = minorGCTime.getAndSet(0L);
         double sampleMajorGCTime = majorGCTime.getAndSet(0L);
-        double gcRatio = deltaGcTime / deltaThreadsCpuTime;
-        double minorGCRatio = sampleMinorGCTime / deltaThreadsCpuTime;
-        double majorGCRatio = sampleMajorGCTime / deltaThreadsCpuTime;
+        double gcRatio = deltaThreadsCpuTime > 0 ? deltaGcTime / deltaThreadsCpuTime : 0;
+        double minorGCRatio = deltaThreadsCpuTime > 0 ? sampleMinorGCTime / deltaThreadsCpuTime : 0;
+        double majorGCRatio = deltaThreadsCpuTime > 0 ? sampleMajorGCTime / deltaThreadsCpuTime : 0;
 
         reporter.reportEvent("GC_RATIO", "", gcRatio, sampleTimeMs);
         reporter.reportEvent("GC_SCALED_CPU_USAGE", "", gcRatio * cpuUsage, sampleTimeMs);
