@@ -19,9 +19,9 @@
     <properties>
         <protobuf.version>3.2.0</protobuf.version>
         <guava.version>19.0</guava.version>
-        <scala.version>2.11.8</scala.version>
-        <scala.major.version>2.11</scala.major.version>
-        <scala.tools.version>2.11</scala.tools.version>
+        <scala.version>2.12.4</scala.version>
+        <scala.major.version>2.12</scala.major.version>
+        <scala.tools.version>2.12</scala.tools.version>
         <scalapb.version>0.5.47</scalapb.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
