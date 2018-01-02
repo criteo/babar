@@ -14,7 +14,7 @@ public class LogReporter extends Reporter {
 
     private final Logger logger = Logger.getLogger(getClass());
 
-    private final JsonFormat.Printer formatter = JsonFormat.printer().includingDefaultValueFields();
+    private final JsonFormat.Printer formatter = JsonFormat.printer();
     private final String LINE_PREFIX = "BABAR_METRIC\t";
 
     private static final String logDir = getLogDir();
