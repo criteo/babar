@@ -67,25 +67,27 @@ public class CPUTimeProfiler extends SamplingProfiler {
 
         double deltaThreadsCpuTime = updateThreadsCpuTimeAndGetDelta();
         // compute CPU usage in number of cores
-        double nonCappedCpuUsage = deltaLastSampleMs > 0 ? deltaThreadsCpuTime / deltaLastSampleMs : 0;
-        double cpuUsage = Math.max(0D, nonCappedCpuUsage);
+        double nonCappedScaledCpuUsage = deltaLastSampleMs > 0 ? deltaThreadsCpuTime / deltaLastSampleMs : 0;
+        double scaledCpuUsage = Math.max(0D, nonCappedScaledCpuUsage);
 
         double systemCpuLoad = JVMUtils.getSystemCPULoad();
 
+        // wall-clock time
         double deltaGcTime = updateGCTimeAndGetDelta();
 
         double sampleMinorGCTime = minorGCTime.getAndSet(0L);
         double sampleMajorGCTime = majorGCTime.getAndSet(0L);
-        double gcRatio = deltaThreadsCpuTime > 0 ? deltaGcTime / deltaThreadsCpuTime : 0;
-        double minorGCRatio = deltaThreadsCpuTime > 0 ? sampleMinorGCTime / deltaThreadsCpuTime : 0;
-        double majorGCRatio = deltaThreadsCpuTime > 0 ? sampleMajorGCTime / deltaThreadsCpuTime : 0;
+
+        double gcRatio = deltaGcTime > 0D ? deltaGcTime / deltaLastSampleMs : 0D;
+        double minorGCRatio = sampleMinorGCTime > 0D ? Math.max(0D, sampleMinorGCTime / deltaLastSampleMs) : 0D;
+        double majorGCRatio = sampleMajorGCTime > 0D ? Math.max(0D, sampleMajorGCTime / deltaLastSampleMs) : 0D;
 
         reporter.reportEvent("GC_RATIO", "", gcRatio, sampleTimeMs);
-        reporter.reportEvent("GC_SCALED_CPU_USAGE", "", gcRatio * cpuUsage, sampleTimeMs);
+        reporter.reportEvent("GC_SCALED_CPU_USAGE", "", gcRatio * scaledCpuUsage, sampleTimeMs);
         reporter.reportEvent("MINOR_GC_RATIO", "", minorGCRatio, sampleTimeMs);
         reporter.reportEvent("MAJOR_GC_RATIO", "", majorGCRatio, sampleTimeMs);
-        reporter.reportEvent("JVM_CPU_USAGE", "", cpuUsage / availableCpu, sampleTimeMs);
-        reporter.reportEvent("JVM_SCALED_CPU_USAGE", "", cpuUsage, sampleTimeMs);
+        reporter.reportEvent("JVM_CPU_USAGE", "", scaledCpuUsage / availableCpu, sampleTimeMs);
+        reporter.reportEvent("JVM_SCALED_CPU_USAGE", "", scaledCpuUsage, sampleTimeMs);
         reporter.reportEvent("SYSTEM_CPU_LOAD", "", systemCpuLoad, sampleTimeMs);
         reporter.reportEvent("SYSTEM_SCALED_CPU_USAGE", "", systemCpuLoad * availableCpu, sampleTimeMs);
     }
