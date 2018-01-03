@@ -1,12 +1,9 @@
 package com.bhnte.babar.agent.profiler;
 
 import com.bhnte.babar.agent.config.AgentConfig;
-import com.bhnte.babar.agent.profiler.Profiler;
-import com.bhnte.babar.agent.profiler.SamplingProfiler;
 import com.bhnte.babar.agent.reporter.Reporter;
 import com.bhnte.babar.agent.worker.SamplingSchedulable;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class SamplingAggregatingProfiler extends SamplingProfiler implements SamplingSchedulable {
@@ -20,7 +17,7 @@ public abstract class SamplingAggregatingProfiler extends SamplingProfiler imple
 
         this.reportingIntervalMs = Math.max(1, profilerConfig.getIntOrDefault("reportingMs", 10000));
         this.reportAfterSamples = Math.max(1, reportingIntervalMs / profilingIntervalMs);
-        LOG.info("will sample every {} ms and report every {} ms", profilingIntervalMs, reportingIntervalMs);
+        System.out.println("Will sample every " + profilingIntervalMs + " ms and report every " + reportingIntervalMs + " ms");
     }
 
     public abstract void start(long startTimeMs) throws Exception;
@@ -45,12 +42,12 @@ public abstract class SamplingAggregatingProfiler extends SamplingProfiler imple
     }
 
     private void reportInternal() {
-        LOG.debug("reporting");
         try {
             report();
         }
         catch (Exception e) {
-            LOG.error("Exception throws while sampling", e);
+            System.err.println("Exception thrown while reporting");
+            e.printStackTrace();
         }
     }
 

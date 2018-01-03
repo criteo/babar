@@ -1,18 +1,12 @@
 package com.bhnte.babar.agent.reporter;
 
 import com.bhnte.babar.agent.config.AgentConfig;
-import com.bhnte.babar.api.metrics.Gauge;
-import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.util.JsonFormat;
-import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class LogReporter extends Reporter {
-
-    private final Logger logger = Logger.getLogger(getClass());
 
     private final static String LINE_PREFIX = "BABAR";
     private final static String LINE_SEPARATOR = "\t";
@@ -33,7 +27,8 @@ public class LogReporter extends Reporter {
             bw.newLine();
         }
         catch (IOException e) {
-            logger.error("Error starting log reporter", e);
+            System.err.println("Exception thrown while tarting reporter");
+            e.printStackTrace();
         }
     }
 
@@ -45,7 +40,8 @@ public class LogReporter extends Reporter {
             fw.close();
         }
         catch (IOException e) {
-            logger.error("Error stopping log reporter", e);
+            System.err.println("Exception thrown while stopping reporter");
+            e.printStackTrace();
         }
     }
 
@@ -60,7 +56,8 @@ public class LogReporter extends Reporter {
             bw.write(LINE_PREFIX + LINE_SEPARATOR + line + "\n");
         }
         catch (Exception e) {
-            logger.error("Error logging metric", e);
+            System.err.println("Exception thrown while logging metric");
+            e.printStackTrace();
         }
     }
 

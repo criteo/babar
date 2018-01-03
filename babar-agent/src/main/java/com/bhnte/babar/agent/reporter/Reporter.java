@@ -1,15 +1,11 @@
 package com.bhnte.babar.agent.reporter;
 
 import com.bhnte.babar.agent.config.AgentConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public abstract class Reporter {
-
-    protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
     public abstract void start();
     public abstract void stop();

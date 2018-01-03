@@ -9,9 +9,6 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>babar-api-protobuf</module>
-        <module>babar-api-java</module>
-        <module>babar-api-scala</module>
         <module>babar-agent</module>
         <module>babar-processor</module>
         <module>babar-scalding</module>

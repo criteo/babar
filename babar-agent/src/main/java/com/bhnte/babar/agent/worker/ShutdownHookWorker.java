@@ -1,9 +1,6 @@
 package com.bhnte.babar.agent.worker;
 
 import com.bhnte.babar.agent.reporter.Reporter;
-import org.apache.log4j.LogManager;
-import org.slf4j.ILoggerFactory;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
