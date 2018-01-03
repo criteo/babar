@@ -22,10 +22,10 @@
     <div id="committed-memory" class="plot"></div>
     <div id="max-used-memory" class="plot"></div>
     <div id="max-committed-memory" class="plot"></div>
+    <div id="accumulated-memory-sec" class="plot"></div>
     <div id="used-cpu" class="plot"></div>
     <div id="gc-ratio" class="plot"></div>
     <div id="max-minor-major-gc-ratio" class="plot"></div>
-    <div id="accumulated-memory-sec" class="plot"></div>
     <div id="accumulated-cpu-sec" class="plot"></div>
 
     <script type="text/javascript">
@@ -35,81 +35,81 @@
             title: "Number of containers",
             yAxisTitle: "containers",
             data: data,
-            bgMetrics: ["NUM_CONTAINERS"],
+            bgMetrics: ["containers"],
             stackedMetrics: [],
             divId: "num-containers"
         })
         plot({
             title: "Used memory",
-            yAxisTitle: "Memory bytes",
+            yAxisTitle: "MB",
             data: data,
-            bgMetrics: ["MEMORY_RESERVED_BYTES(sum)"],
-            stackedMetrics: ["HEAP_MEMORY_USED_BYTES(sum)", "OFF_HEAP_MEMORY_USED_BYTES(sum)"],
+            bgMetrics: ["total reserved"],
+            stackedMetrics: ["total used heap", "total used off-heap"],
             divId: "used-memory"
         })
         plot({
             title: "Committed memory",
-            yAxisTitle: "Memory bytes",
+            yAxisTitle: "MB",
             data: data,
-            bgMetrics: ["MEMORY_RESERVED_BYTES(sum)"],
-            stackedMetrics: ["HEAP_MEMORY_COMMITTED_BYTES(sum)", "OFF_HEAP_MEMORY_COMMITTED_BYTES(sum)"],
+            bgMetrics: ["total reserved"],
+            stackedMetrics: ["total committed heap", "total committed off-heap"],
             divId: "committed-memory"
         })
         plot({
             title: "Max used memory for a container",
-            yAxisTitle: "Memory bytes",
+            yAxisTitle: "MB",
             data: data,
-            bgMetrics: ["MEMORY_RESERVED_BYTES(max)"],
-            stackedMetrics: ["HEAP_MEMORY_USED_BYTES(max)", "OFF_HEAP_MEMORY_USED_BYTES(max)"],
+            bgMetrics: ["max reserved"],
+            stackedMetrics: ["max used heap", "max used off-heap"],
             divId: "max-used-memory"
         })
         plot({
             title: "Max committed memory for a container",
             yAxisTitle: "Memory bytes",
             data: data,
-            bgMetrics: ["MEMORY_RESERVED_BYTES(max)"],
-            stackedMetrics: ["HEAP_MEMORY_COMMITTED_BYTES(max)", "OFF_HEAP_MEMORY_COMMITTED_BYTES(max)"],
+            bgMetrics: ["max reserved"],
+            stackedMetrics: ["max committed heap", "max committed off-heap"],
             divId: "max-committed-memory"
         })
         plot({
             title: "CPU Usage (# used cores)",
             yAxisTitle: "used cores",
             data: data,
-            bgMetrics: ["JVM_SCALED_CPU_USAGE(max)", "JVM_SCALED_CPU_USAGE(med)"],
+            bgMetrics: ["max JVM CPU usage", "median JVM CPU usage"],
             stackedMetrics: [],
             divId: "used-cpu"
         })
         plot({
-            title: "GC usage",
-            yAxisTitle: "GC usage",
+            title: "GC ratio",
+            yAxisTitle: "GC ratio",
             yAxisMax: 1,
             data: data,
-            bgMetrics: ["GC_RATIO(max)", "GC_RATIO(med)"],
+            bgMetrics: ["max GC ratio", "median GC ratio"],
             stackedMetrics: [],
             divId: "gc-ratio"
         })
         plot({
-            title: "Minor & Major GC usage",
-            yAxisTitle: "GC usage",
+            title: "Minor & Major GC ratio",
+            yAxisTitle: "GC ratio",
             yAxisMax: 1,
             data: data,
             bgMetrics: [],
-            stackedMetrics: ["MINOR_GC_RATIO(med)", "MAJOR_GC_RATIO(med)"],
+            stackedMetrics: ["median minor GC ratio", "median major GC ratio"],
             divId: "max-minor-major-gc-ratio"
         })
         plot({
             title: "Accumulated Memory (megabytes seconds)",
             yAxisTitle: "MBs",
             data: data,
-            bgMetrics: ["MEMORY_RESERVED_BYTES(accumulated)"],
-            stackedMetrics: ["HEAP_MEMORY_USED_BYTES(accumulated)", "OFF_HEAP_MEMORY_USED_BYTES(accumulated)"],
+            bgMetrics: ["accumulated reserved"],
+            stackedMetrics: ["accumulated used heap", "accumulated used off-heap"],
             divId: "accumulated-memory-sec"
         })
         plot({
             title: "Accumulated CPU Seconds",
-            yAxisTitle: "cpu seconds",
+            yAxisTitle: "CPU seconds",
             data: data,
-            bgMetrics: ["JVM_SCALED_CPU_USAGE(accumulated)", "GC_SCALED_CPU_USAGE(accumulated)"],
+            bgMetrics: ["accumulated JVM CPU sec", "accumulated GC CPU sec"],
             stackedMetrics: [],
             divId: "accumulated-cpu-sec"
         })

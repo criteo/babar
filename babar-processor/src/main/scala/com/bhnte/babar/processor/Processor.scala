@@ -35,37 +35,37 @@ object Processor {
     // define aggregations
     val timePrecMs = conf.timePrecision()
     val timePrecSec = timePrecMs / 1000D
-    val MBSec = timePrecSec / 1024D / 1024D
+    val MB = 1D / 1024D / 1024D
+    val MBSec = timePrecSec * MB
     val allMemoryCpuAggregations = Set(
-      SumMaxByContainerAggregation("HEAP_MEMORY_USED_BYTES", timePrecMs),
-      MaxAggregation("HEAP_MEMORY_USED_BYTES", timePrecMs),
-      SumMaxByContainerAggregation("OFF_HEAP_MEMORY_USED_BYTES", timePrecMs),
-      MaxAggregation("OFF_HEAP_MEMORY_USED_BYTES", timePrecMs),
-      SumMaxByContainerAggregation("HEAP_MEMORY_COMMITTED_BYTES", timePrecMs),
-      MaxAggregation("HEAP_MEMORY_COMMITTED_BYTES", timePrecMs),
-      SumMaxByContainerAggregation("OFF_HEAP_MEMORY_COMMITTED_BYTES", timePrecMs),
-      MaxAggregation("OFF_HEAP_MEMORY_COMMITTED_BYTES", timePrecMs),
-      SumMaxByContainerAggregation("MEMORY_RESERVED_BYTES", timePrecMs),
-      MaxAggregation("MEMORY_RESERVED_BYTES", timePrecMs),
-      MaxAggregation("JVM_SCALED_CPU_USAGE", timePrecMs),
-      MedianMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", timePrecMs),
-      MaxAggregation("GC_RATIO", timePrecMs),
-      MedianMaxByContainerAggregation("GC_RATIO", timePrecMs),
-      MaxAggregation("MINOR_GC_RATIO", timePrecMs),
-      MaxAggregation("MAJOR_GC_RATIO", timePrecMs),
-      MedianMaxByContainerAggregation("MINOR_GC_RATIO", timePrecMs),
-      MedianMaxByContainerAggregation("MAJOR_GC_RATIO", timePrecMs),
-      CountContainersAggregation("NUM_CONTAINERS", timePrecMs),
-      AccumulatedMaxByContainerAggregation("MEMORY_RESERVED_BYTES", timePrecMs, MBSec),
-      AccumulatedMaxByContainerAggregation("HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
-      AccumulatedMaxByContainerAggregation("OFF_HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
-      AccumulatedMaxByContainerAggregation("JVM_SCALED_CPU_USAGE", timePrecMs, timePrecSec),
-      AccumulatedMaxByContainerAggregation("GC_SCALED_CPU_USAGE", timePrecMs, timePrecSec)
-
+      SumMaxByContainerAggregation("total used heap", "HEAP_MEMORY_USED_BYTES", timePrecMs, MB),
+      MaxAggregation("max used heap", "HEAP_MEMORY_USED_BYTES", timePrecMs, MB),
+      SumMaxByContainerAggregation("total used off-heap", "OFF_HEAP_MEMORY_USED_BYTES", timePrecMs, MB),
+      MaxAggregation("max used off-heap", "OFF_HEAP_MEMORY_USED_BYTES", timePrecMs, MB),
+      SumMaxByContainerAggregation("total committed heap", "HEAP_MEMORY_COMMITTED_BYTES", timePrecMs, MB),
+      MaxAggregation("max committed heap", "HEAP_MEMORY_COMMITTED_BYTES", timePrecMs, MB),
+      SumMaxByContainerAggregation("total committed off-heap", "OFF_HEAP_MEMORY_COMMITTED_BYTES", timePrecMs, MB),
+      MaxAggregation("max committed off-heap", "OFF_HEAP_MEMORY_COMMITTED_BYTES", timePrecMs, MB),
+      SumMaxByContainerAggregation("total reserved", "MEMORY_RESERVED_BYTES", timePrecMs, MB),
+      MaxAggregation("max reserved", "MEMORY_RESERVED_BYTES", timePrecMs, MB),
+      MaxAggregation("max JVM CPU usage", "JVM_SCALED_CPU_USAGE", timePrecMs),
+      MedianMaxByContainerAggregation("median JVM CPU usage", "JVM_SCALED_CPU_USAGE", timePrecMs),
+      MaxAggregation("max GC ratio", "GC_RATIO", timePrecMs),
+      MedianMaxByContainerAggregation("median GC ratio", "GC_RATIO", timePrecMs),
+      MaxAggregation("max minor GC ratio", "MINOR_GC_RATIO", timePrecMs),
+      MaxAggregation("max major GC ratio", "MAJOR_GC_RATIO", timePrecMs),
+      MedianMaxByContainerAggregation("median minor GC ratio", "MINOR_GC_RATIO", timePrecMs),
+      MedianMaxByContainerAggregation("median major GC ratio", "MAJOR_GC_RATIO", timePrecMs),
+      CountContainersAggregation("containers", timePrecMs),
+      AccumulatedMaxByContainerAggregation("accumulated reserved", "MEMORY_RESERVED_BYTES", timePrecMs, MBSec),
+      AccumulatedMaxByContainerAggregation("accumulated used heap", "HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
+      AccumulatedMaxByContainerAggregation("accumulated used off-heap", "OFF_HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
+      AccumulatedMaxByContainerAggregation("accumulated JVM CPU sec", "JVM_SCALED_CPU_USAGE", timePrecMs, timePrecSec),
+      AccumulatedMaxByContainerAggregation("accumulated GC CPU sec", "GC_SCALED_CPU_USAGE", timePrecMs, timePrecSec)
     )
 
     val allTracesAggregations = Set(
-      TracesAggregation("CPU_TRACES", conf.tracesPrefixes().split(',').toSet, conf.tracesMinRatio())
+      TracesAggregation("traces", "CPU_TRACES", conf.tracesPrefixes().split(',').toSet, conf.tracesMinRatio())
     )
 
     val allAggregations = allMemoryCpuAggregations ++ allTracesAggregations
@@ -198,9 +198,12 @@ trait TimeValueByContainerAggregation[A_CONT, A_ALL, V] extends Aggregation[Vect
   }
 }
 
-case class SumMaxByContainerAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
+case class SumMaxByContainerAggregation(name: String,
+                                        metric: String,
+                                        timePrecision: Long,
+                                        multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, Double, Double] {
-  override def name: String = metric+"(sum)"
+
   override def applies(g: Gauge): Boolean = g.metric == metric
   override def valueToV(v: Double): Double = v
   override def zeroByContainer: Double = 0D
@@ -211,9 +214,12 @@ case class SumMaxByContainerAggregation(metric: String, timePrecision: Long, mul
   override def aggOverAllContainersToValue(agg: Double): Double = agg
 }
 
-case class AvgMaxByContainerAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
+case class AvgMaxByContainerAggregation(name: String,
+                                        metric: String,
+                                        timePrecision: Long,
+                                        multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, (Long, Double), Double] {
-  override def name: String = metric+"(avg)"
+
   override def applies(g: Gauge): Boolean = g.metric == metric
   override def valueToV(v: Double): Double = v
   override def zeroByContainer: Double = 0D
@@ -225,9 +231,12 @@ case class AvgMaxByContainerAggregation(metric: String, timePrecision: Long, mul
   override def aggOverAllContainersToValue(acc: (Long, Double)): Double = acc._2 / acc._1
 }
 
-case class MedianMaxByContainerAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
+case class MedianMaxByContainerAggregation(name: String,
+                                           metric: String,
+                                           timePrecision: Long,
+                                           multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, mutable.Buffer[Double], Double] {
-  override def name: String = metric+"(med)"
+
   override def applies(g: Gauge): Boolean = g.metric == metric
   override def valueToV(v: Double): Double = v
   override def zeroByContainer: Double = 0D
@@ -246,9 +255,12 @@ case class MedianMaxByContainerAggregation(metric: String, timePrecision: Long, 
   }
 }
 
-case class AccumulatedMaxByContainerAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
+case class AccumulatedMaxByContainerAggregation(name: String,
+                                                metric: String,
+                                                timePrecision: Long,
+                                                multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, Double, Double] {
-  override def name: String = metric+"(accumulated)"
+
   override def applies(g: Gauge): Boolean = g.metric == metric
   override def valueToV(v: Double): Double = v
   override def zeroByContainer: Double = 0D
@@ -268,9 +280,12 @@ case class AccumulatedMaxByContainerAggregation(metric: String, timePrecision: L
   }
 }
 
-case class MaxAggregation(metric: String, timePrecision: Long, multiplier: Double = 1D)
+case class MaxAggregation(name: String,
+                          metric: String,
+                          timePrecision: Long,
+                          multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, Double, Double] {
-  override def name: String = metric+"(max)"
+
   override def applies(g: Gauge): Boolean = g.metric == metric
   override def valueToV(v: Double): Double = v
   override def zeroByContainer: Double = 0D
@@ -281,7 +296,9 @@ case class MaxAggregation(metric: String, timePrecision: Long, multiplier: Doubl
   override def aggOverAllContainersToValue(agg: Double): Double = agg
 }
 
-case class CountContainersAggregation(name: String, timePrecision: Long, multiplier: Double = 1D)
+case class CountContainersAggregation(name: String,
+                                      timePrecision: Long,
+                                      multiplier: Double = 1D)
   extends TimeValueByContainerAggregation[Double, Double, Double] {
 
   override def valueToV(v: Double): Double = v
@@ -294,12 +311,11 @@ case class CountContainersAggregation(name: String, timePrecision: Long, multipl
   override def aggOverAllContainersToValue(agg: Double): Double = agg
 }
 
-case class TracesAggregation(metric: String,
+case class TracesAggregation(name: String,
+                             metric: String,
                              tracesPrefixes: Set[String],
                              minSampleRatio: Double)
   extends Aggregation[TraceNode] {
-
-  override def name: String = metric+"(traces)"
 
   private val root = TraceNode("root")
 

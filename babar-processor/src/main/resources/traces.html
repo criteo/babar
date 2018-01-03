@@ -23,7 +23,7 @@
     <script type="text/javascript">
         const data = {{DATA}}
 
-        renderFlameGraph(data["CPU_TRACES(traces)"], "graph")
+        renderFlameGraph(data["traces"], "graph")
 
         function renderFlameGraph(root, divId) {
             var tip = d3.tip()
