@@ -14,8 +14,8 @@ public class LogReporter extends Reporter {
 
     private final Logger logger = Logger.getLogger(getClass());
 
-    private final JsonFormat.Printer formatter = JsonFormat.printer();
-    private final String LINE_PREFIX = "BABAR_METRIC\t";
+    private final static String LINE_PREFIX = "BABAR";
+    private final static String LINE_SEPARATOR = "\t";
 
     private static final String logDir = getLogDir();
     private BufferedWriter bw = null;
@@ -51,20 +51,13 @@ public class LogReporter extends Reporter {
 
     @Override
     public void reportEvent(String metric, String label, Double value, Long time) {
-        Gauge gauge = Gauge.newBuilder()
-            .setContainer(container)
-            .setMetric(metric)
-            .setLabel(label)
-            .setTimestamp(time)
-            .setValue(value)
-            .build();
-        log(gauge);
+        String line = container + LINE_SEPARATOR + metric + LINE_SEPARATOR + time + LINE_SEPARATOR + value + LINE_SEPARATOR + label;
+        log(line);
     }
 
-    private void log(MessageOrBuilder metric) {
+    private void log(String line) {
         try {
-            String line = formatter.print(metric).replace("\n", "");
-            bw.write(LINE_PREFIX + line + "\n");
+            bw.write(LINE_PREFIX + LINE_SEPARATOR + line + "\n");
         }
         catch (Exception e) {
             logger.error("Error logging metric", e);

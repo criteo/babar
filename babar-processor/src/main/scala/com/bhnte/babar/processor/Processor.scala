@@ -1,7 +1,5 @@
 package com.bhnte.babar.processor
 
-import com.bhnte.babar.api.metrics.Gauge
-import com.trueaccord.scalapb.json.JsonFormat
 import org.apache.commons.lang3.mutable.MutableLong
 import org.apache.hadoop.fs.Path
 import org.rogach.scallop.ScallopConf
@@ -25,8 +23,9 @@ object Processor {
   val MEMORY_CPU_HTML_FILE = "memory-cpu.html"
   val TRACES_HTML_FILE = "traces.html"
 
-  protected val LINE_PREFIX: String = "BABAR_METRIC\t"
-  protected val LINE_PREFIX_LENGTH: Int = LINE_PREFIX.length
+  val LINE_PREFIX: String = "BABAR\t"
+  val LINE_SEPARATOR = "\t"
+  val LINE_PREFIX_LENGTH: Int = LINE_PREFIX.length
 
   def main(args: Array[String]): Unit = {
 
@@ -97,10 +96,20 @@ object Processor {
   }
 
   protected def tryParseLine(line: String): Option[Try[Gauge]] = {
-    if (line != null && line.startsWith(LINE_PREFIX))
-      Some(Try(JsonFormat.fromJsonString[Gauge](line.drop(LINE_PREFIX_LENGTH))))
-    else
+    if (line != null && line.startsWith(LINE_PREFIX)) {
+      val splits = line.drop(LINE_PREFIX_LENGTH).split(LINE_SEPARATOR)
+      if (splits.length < 4 || splits.length > 5) None
+      else Some(Try(Gauge(
+        container = splits(0),
+        metric = splits(1),
+        timestamp = splits(2).toLong,
+        value = splits(3).toDouble,
+        label = if (splits.length == 5) splits(4) else ""
+      )))
+    }
+    else {
       None
+    }
   }
 
   def buidMemoryCpuJson(memoryCpuAggregations: Set[_ <: Aggregation[Vector[(Long, Double)]]]): JSONObject = {
@@ -122,6 +131,13 @@ object Processor {
     val tracesMap = tracesAggregations.map(agg => (agg.name, agg.get.toJSON)).toMap
     JSONObject(tracesMap)
   }
+}
+
+case class Gauge(container: String,
+                 metric: String,
+                 timestamp: Long,
+                 value: Double,
+                 label: String) {
 }
 
 trait Aggregation[T] {
