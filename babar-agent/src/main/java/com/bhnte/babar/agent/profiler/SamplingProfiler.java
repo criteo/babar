@@ -54,7 +54,7 @@ public abstract class SamplingProfiler extends Profiler implements SamplingSched
         try {
             sampleInternal(currentTimeMs, deltaSampleMs);
         } catch (Exception e) {
-            System.err.println("Exception thrown while profiling profiler");
+            System.err.println("Exception thrown while profiling");
             e.printStackTrace();
         }
     }
