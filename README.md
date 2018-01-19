@@ -37,7 +37,7 @@ Babar is composed of two main components:
 
 The **babar agent** is a `java-agent` program. An agent is a jar that can be attached to a JVM in order to intrument this JVM. The agent fecthes, at regular interval, information on the resource comsumption and logs the resulting metrics in a plain text file named `babar.log` inside the YARN log directory. YARN's log aggregation at the end of the application them combine all the executors logs into a single log file on HDFS.
 
-The **babar-processor** is the piece of software responsible for parsing the aggregated log file from the YARN application and aggregating the metrics found in them to produce the graphs. the logs are parsed as streams which allows the **babar-processor** to aggregate large logs files (dozens of GB) wihtout needing to load them in memory entirely at once.
+The **babar-processor** is the piece of software responsible for parsing the aggregated log file from the YARN application and aggregating the metrics found in them to produce the graphs. the logs are parsed as streams which allows the **babar-processor** to aggregate large logs files (dozens of GB) without needing to load them in memory entirely at once.
 
 Once the **babar-processor** has run, a new directory is created containing two HTML files containing the graphs (memory, CPU usage, GC usage, executor counts, flame-graphs,...).
 
@@ -63,7 +63,7 @@ the profilers can be added and configured using this command line. The profilers
 
 - `CPUTimeProfiler`: this profiler registers and logs CPU usage and GC activity metrics at a regular interval. This interval can be configured using the `profilingMs` option in its arguments (e.g. `CPUTimeProfiler[profilingMs=5000]` will add the profiler and make it register metrics every 5 seconds)
 
-- `MemoryProfiler`: this profiler registers metrics about memory (heapand off-heap used and committed memory) as well as reserved memory for the containers. The frequency of the profiling can be adjusted with `profilingMs`, and the amount of reserved memory for the executor can be indicated with `reservedMB`
+- `MemoryProfiler`: this profiler registers metrics about memory (heap and off-heap used and committed memory) as well as reserved memory for the containers. The frequency of the profiling can be adjusted with `profilingMs`, and the amount of reserved memory for the executor can be indicated with `reservedMB`
 
 - `StackTraceProfiler`: This profilers registers the stach traces of all `RUNNABLE` threads at regular intervals (the `profilingMs` options) and logs them at another interval (the `reportingMs` option) in order to aggregate multiple traces before logging them to save space in the logs. The traces are always logged at the JVM shutdown so one can set the repoting interval very high in order to save the most space in the logs if they are not interested in having traces logged in case the JVM is killed or fails.
 
