@@ -3,7 +3,6 @@ Table of Contents
 
    * [Table of Contents](#table-of-contents)
    * [BABAR: a profiler for large-scale distributed applications](#babar-a-profiler-for-large-scale-distributed-applications)
-      * [Screenshots](#screenshots)
       * [How to use](#how-to-use)
          * [Babar-agent](#babar-agent)
             * [instrumenting the JVM with the agent](#instrumenting-the-jvm-with-the-agent)
@@ -15,6 +14,7 @@ Table of Contents
          * [If the jar is already available on the nodes](#if-the-jar-is-already-available-on-the-nodes)
          * [Distribute the jar programmatically](#distribute-the-jar-programmatically)
       * [Profiling a Hive application](#profiling-a-hive-application)
+      * [Screenshots](#screenshots)
 
 # BABAR: a profiler for large-scale distributed applications
 
@@ -23,11 +23,6 @@ Babar is a profiler for java applications developed to **profile large-scale dis
 Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual JVM and then aggregate them over the entire application to produce ready-to-use graphs of the resource usage and method calls (as flame-graphs) of the program as shown in the screenshots section below.
 
 Currently babar is designed to **profile YARN applications**, but could be extended in order to profile other types of applications.
-
-## Screenshots
-
-![memory-cpu](/babar-doc/memory-cpu.png)
-![traces](/babar-doc/traces.png)
 
 ## How to use
 
@@ -146,3 +141,8 @@ ADD FILE /home/b.hanotte/babar-agent-1.0-SNAPSHOT.jar;
 SET mapreduce.map.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=2560],CPUTimeProfiler[profilingMs=5000]";
 SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=3684],CPUTimeProfiler[profilingMs=5000]";
 ```
+
+## Screenshots
+
+![memory-cpu](/babar-doc/memory-cpu.png)
+![traces](/babar-doc/traces.png)
