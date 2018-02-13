@@ -89,7 +89,7 @@ public class CPUTimeProfiler extends SamplingProfiler {
         reporter.reportEvent("JVM_CPU_USAGE", "", scaledCpuUsage / availableCpu, sampleTimeMs);
         reporter.reportEvent("JVM_SCALED_CPU_USAGE", "", scaledCpuUsage, sampleTimeMs);
         reporter.reportEvent("SYSTEM_CPU_LOAD", "", systemCpuLoad, sampleTimeMs);
-        reporter.reportEvent("SYSTEM_SCALED_CPU_USAGE", "", systemCpuLoad * availableCpu, sampleTimeMs);
+        reporter.reportEvent("SYSTEM_SCALED_CPU_LOAD", "", systemCpuLoad * availableCpu, sampleTimeMs);
     }
 
     private long updateThreadsCpuTimeAndGetDelta() {
