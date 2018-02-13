@@ -59,11 +59,11 @@ object Processor {
       MedianMaxByContainerAggregation("median minor GC ratio", "MINOR_GC_RATIO", timePrecMs),
       MedianMaxByContainerAggregation("median major GC ratio", "MAJOR_GC_RATIO", timePrecMs),
       CountContainersAggregation("containers", timePrecMs),
-      AccumulatedMaxByContainerAggregation("accumulated reserved", "MEMORY_RESERVED_BYTES", timePrecMs, MBSec),
-      AccumulatedMaxByContainerAggregation("accumulated used heap", "HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
-      AccumulatedMaxByContainerAggregation("accumulated used off-heap", "OFF_HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
-      AccumulatedMaxByContainerAggregation("accumulated JVM CPU sec", "JVM_SCALED_CPU_USAGE", timePrecMs, timePrecSec),
-      AccumulatedMaxByContainerAggregation("accumulated GC CPU sec", "GC_SCALED_CPU_USAGE", timePrecMs, timePrecSec)
+      AccumulatedAvgByContainerAggregation("accumulated reserved", "MEMORY_RESERVED_BYTES", timePrecMs, MBSec),
+      AccumulatedAvgByContainerAggregation("accumulated used heap", "HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
+      AccumulatedAvgByContainerAggregation("accumulated used off-heap", "OFF_HEAP_MEMORY_USED_BYTES", timePrecMs, MBSec),
+      AccumulatedAvgByContainerAggregation("accumulated JVM CPU sec", "JVM_SCALED_CPU_USAGE", timePrecMs, timePrecSec),
+      AccumulatedAvgByContainerAggregation("accumulated GC CPU sec", "GC_SCALED_CPU_USAGE", timePrecMs, timePrecSec)
     )
 
     val allTracesAggregations = Set(
@@ -280,6 +280,32 @@ case class AccumulatedMaxByContainerAggregation(name: String,
       case ((prevT, prev), (t, v)) => (t, prev + v)
     }.drop(1) // remove zero
   }
+}
+
+case class AccumulatedAvgByContainerAggregation(name: String,
+                                                metric: String,
+                                                timePrecision: Long,
+                                                multiplier: Double = 1D)
+  extends TimeValueByContainerAggregation[(Long, Double), Double, Double] {
+
+
+
+  override def get: Vector[(Long, Double)] = {
+    val sortedBeforeAccumulated = super.get
+    // accumulate the values in order to get the integral values
+    sortedBeforeAccumulated.scanLeft((0L, zeroOverAllContainers)){
+      case ((prevT, prev), (t, v)) => (t, prev + v)
+    }.drop(1) // remove zero
+  }
+
+  override def applies(g: Gauge): Boolean = g.metric == metric
+  override def valueToV(v: Double): Double = v
+  override def zeroByContainer: (Long, Double) = (0L, 0D)
+  override def foldByContainer(acc: (Long, Double), v: Double): (Long, Double) = (acc._1 + 1L, acc._2 + v)
+  override def aggByContainerToValue(agg: (Long, Double)): Double = agg._2 / agg._1
+  override def zeroOverAllContainers: Double = 0D
+  override def foldOverAllContainers(acc: Double, v: Double): Double = acc  + v
+  override def aggOverAllContainersToValue(agg: Double): Double = agg
 }
 
 case class MaxAggregation(name: String,
