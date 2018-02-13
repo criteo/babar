@@ -50,6 +50,8 @@ object Processor {
       MaxAggregation("max reserved", "MEMORY_RESERVED_BYTES", timePrecMs, MB),
       MaxAggregation("max JVM CPU usage", "JVM_SCALED_CPU_USAGE", timePrecMs),
       MedianMaxByContainerAggregation("median JVM CPU usage", "JVM_SCALED_CPU_USAGE", timePrecMs),
+      MaxAggregation("max system CPU load", "SYSTEM_CPU_LOAD", timePrecMs),
+      MedianMaxByContainerAggregation("median system CPU load", "SYSTEM_CPU_LOAD", timePrecMs),
       MaxAggregation("max GC ratio", "GC_RATIO", timePrecMs),
       MedianMaxByContainerAggregation("median GC ratio", "GC_RATIO", timePrecMs),
       MaxAggregation("max minor GC ratio", "MINOR_GC_RATIO", timePrecMs),

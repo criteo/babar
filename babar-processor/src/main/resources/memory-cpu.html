@@ -23,6 +23,7 @@
     <div id="max-used-memory" class="plot"></div>
     <div id="max-committed-memory" class="plot"></div>
     <div id="accumulated-memory-sec" class="plot"></div>
+    <div id="system-cpu" class="plot"></div>
     <div id="used-cpu" class="plot"></div>
     <div id="gc-ratio" class="plot"></div>
     <div id="max-minor-major-gc-ratio" class="plot"></div>
@@ -72,7 +73,15 @@
             divId: "max-committed-memory"
         })
         plot({
-            title: "CPU Usage (# used cores)",
+            title: "System CPU Load",
+            yAxisTitle: "load",
+            data: data,
+            bgMetrics: ["max system CPU load", "median system CPU load"],
+            stackedMetrics: [],
+            divId: "system-cpu"
+        })
+        plot({
+            title: "JVM scaled CPU Usage (# used cores)",
             yAxisTitle: "used cores",
             data: data,
             bgMetrics: ["max JVM CPU usage", "median JVM CPU usage"],
