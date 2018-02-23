@@ -60,7 +60,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Premain-Class>com.bhnte.babar.agent.Agent</Premain-Class>
+                                        <Premain-Class>com.criteo.babar.agent.Agent</Premain-Class>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>

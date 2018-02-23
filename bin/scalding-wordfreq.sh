@@ -3,7 +3,7 @@
 SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 yarn jar ./babar-scalding/target/babar-scalding-1.0-SNAPSHOT.jar \
-    com.bhnte.babar.scalding.wordcount.WordFreqJob \
+    com.criteo.babar.scalding.wordcount.WordFreqJob \
     --hdfs \
     --input "hdfs://localhost:54310/wordcount/input.txt" \
     --output "hdfs://localhost:54310/wordcount/output" \
