@@ -1,5 +1,8 @@
 package com.criteo.babar.processor
 
+import java.io.File
+import java.util.Collections
+
 import org.apache.commons.lang3.mutable.MutableLong
 import org.apache.hadoop.fs.Path
 import org.rogach.scallop.ScallopConf
@@ -73,17 +76,23 @@ object Processor {
     val allAggregations = allMemoryCpuAggregations ++ allTracesAggregations
     val containers = conf.containers().split(',').toSet
 
+    val logPath = new Path(conf.logFile())
+    val counter = new Counter(logPath)
+
     println("start aggregating...")
     FSUtils
-      .readAsStream(new Path(conf.logFile()))
-      .flatMap(tryParseLine)
+      .readAsStream(logPath)
+      .flatMap( line => {
+        counter.printProgress(line)
+        tryParseLine(line)
+      })
       .flatMap(_.toOption)
       .foreach(g => {
         if (containers.isEmpty || containers.exists(c => g.container.startsWith(c))) {
           allAggregations.foreach(agg => agg.process(g))
         }
       })
-    println("done aggregating")
+    println("\ndone aggregating")
 
     println("start writing memory & cpu html...")
     val memoryCpuJson = buidMemoryCpuJson(allMemoryCpuAggregations)
@@ -95,6 +104,31 @@ object Processor {
     FSUtils.copyFromResourceWithData(TRACES_HTML_FILE, new Path(conf.outputDir(), TRACES_HTML_FILE), tracesJson.toString())
     println("done writing traces html")
 
+  }
+
+  class Counter(logPath : Path) {
+    val totalByteSize = new File(logPath.toString).length()
+    var counter = 0.0
+    var nextMilestone = 1
+
+    def printProgress(line: String): Unit = {
+      if (line != null) {
+        counter = counter + line.getBytes("UTF-8").length
+        val percent = (counter / totalByteSize * 100).toInt
+
+        if (percent > nextMilestone) {
+          nextMilestone = nextMilestone + 1
+          val s = new StringBuilder()
+            .append('\r')
+            .append(s"$percent% [")
+            .append(String.join("", Collections.nCopies(percent, "=")))
+            .append('>')
+            .append(String.join("", Collections.nCopies(100 - percent, " ")))
+            .append(']')
+          System.out.print(s)
+        }
+      }
+    }
   }
 
   protected def tryParseLine(line: String): Option[Try[Gauge]] = {
@@ -381,7 +415,7 @@ case class TracesAggregation(name: String,
 
   private def pruneTooLittleSamples(n: TraceNode, minSamples: Long): Unit = {
     n.children.toList.foreach{ case (key, node) =>
-        if (n.value.getValue < minSamples) n.children.remove(key)
+      if (n.value.getValue < minSamples) n.children.remove(key)
     }
     n.children.foreach{ case (key, node) => pruneTooLittleSamples(node, minSamples)}
   }
