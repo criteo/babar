@@ -415,9 +415,9 @@ case class TracesAggregation(name: String,
 
   private def pruneTooLittleSamples(n: TraceNode, minSamples: Long): Unit = {
     n.children.toList.foreach{ case (key, node) =>
-      if (n.value.getValue < minSamples) n.children.remove(key)
+      if (node.value.getValue < minSamples) n.children.remove(key)
     }
-    n.children.foreach{ case (key, node) => pruneTooLittleSamples(node, minSamples)}
+    n.children.foreach{ case (_, node) => pruneTooLittleSamples(node, minSamples)}
   }
 }
 
