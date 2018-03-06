@@ -18,6 +18,8 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
   val tracesMinRatio = opt[Double](short = 'm', descr = "min ratio of trace samples to keep trace (default: 0.001)", default = Some(0.001D))
   val tracesPrefixes = opt[String](short = 'p', descr = "if set, traces will be aggregated only from methods matching the prefixes (comma-separated)", default = Some(""))
   val containers = opt[String](short = 'c', descr = "if set, only metrics of containers matching these prefixes are aggregated (comma-separated)", default = Some(""))
+  val maxDepth = opt[Int](short = 'd', descr = "Only methods with a depth in the call stack inferior or equal to this value will be kept. This is useful to prevent " +
+    "creating deeply nested JSON objects that would make the renderer crash. To disable it, set a negative value (e.g. -1)", default = Some(100))
   verify()
 }
 
@@ -70,7 +72,7 @@ object Processor {
     )
 
     val allTracesAggregations = Set(
-      TracesAggregation("traces", "CPU_TRACES", conf.tracesPrefixes().split(',').toSet, conf.tracesMinRatio())
+      TracesAggregation("traces", "CPU_TRACES", conf.tracesPrefixes().split(',').toSet, conf.tracesMinRatio(), conf.maxDepth())
     )
 
     val allAggregations = allMemoryCpuAggregations ++ allTracesAggregations
@@ -376,7 +378,8 @@ case class CountContainersAggregation(name: String,
 case class TracesAggregation(name: String,
                              metric: String,
                              tracesPrefixes: Set[String],
-                             minSampleRatio: Double)
+                             minSampleRatio: Double,
+                             maxDepth: Int)
   extends Aggregation[TraceNode] {
 
   private val root = TraceNode("root")
@@ -391,7 +394,10 @@ case class TracesAggregation(name: String,
 
     val samplesCount = g.value.toLong
 
-    val leaf = splits.foldLeft(root){(parent, method) =>
+    // filter out methods too deep in the call stack
+    val filteredSplits = if (maxDepth > 0) splits.take(maxDepth) else splits
+
+    val leaf = filteredSplits.foldLeft(root){(parent, method) =>
       parent.inc(samplesCount)
       val maybeChildren = parent.children.get(method)
       if (maybeChildren.isDefined) {
