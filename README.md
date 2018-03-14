@@ -15,6 +15,7 @@ Table of Contents
          * [Distribute the jar programmatically](#distribute-the-jar-programmatically)
       * [Profiling a Hive application](#profiling-a-hive-application)
       * [Screenshots](#screenshots)
+      * [License](#license)
 
 # BABAR: a profiler for large-scale distributed applications
 
@@ -146,3 +147,13 @@ SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackT
 
 ![memory-cpu](/babar-doc/memory-cpu.png)
 ![traces](/babar-doc/traces.png)
+
+## License
+
+Copyright 2018 Criteo
+
+Licensed under the Apache License, Version 2.0 (the "License").
+You may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
