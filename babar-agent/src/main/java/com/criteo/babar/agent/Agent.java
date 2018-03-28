@@ -2,7 +2,9 @@ package com.criteo.babar.agent;
 
 import com.criteo.babar.agent.config.AgentConfig;
 import com.criteo.babar.agent.profiler.CPUTimeProfiler;
+import com.criteo.babar.agent.profiler.JVMProfiler;
 import com.criteo.babar.agent.profiler.MemoryProfiler;
+import com.criteo.babar.agent.profiler.ProcFSProfiler;
 import com.criteo.babar.agent.profiler.Profiler;
 import com.criteo.babar.agent.profiler.SamplingProfiler;
 import com.criteo.babar.agent.profiler.StackTraceProfiler;
@@ -36,15 +38,21 @@ public class Agent {
         Reporter reporter = new LogReporter(config);
 
         // register profilers for scheduling
-        if (config.isProfilerEnabled(StackTraceProfiler.class.getSimpleName())) {
-            registerProfiler(new StackTraceProfiler(config, reporter));
+        if (config.isProfilerEnabled(ProcFSProfiler.class.getSimpleName())) {
+            registerProfiler(new ProcFSProfiler(config, reporter));
         }
-        if (config.isProfilerEnabled(MemoryProfiler.class.getSimpleName())) {
-            registerProfiler(new MemoryProfiler(config, reporter));
+        if (config.isProfilerEnabled(JVMProfiler.class.getSimpleName())) {
+            registerProfiler(new JVMProfiler(config, reporter));
         }
-        if (config.isProfilerEnabled(CPUTimeProfiler.class.getSimpleName())) {
-            registerProfiler(new CPUTimeProfiler(config, reporter));
-        }
+//        if (config.isProfilerEnabled(StackTraceProfiler.class.getSimpleName())) {
+//            registerProfiler(new StackTraceProfiler(config, reporter));
+//        }
+//        if (config.isProfilerEnabled(MemoryProfiler.class.getSimpleName())) {
+//            registerProfiler(new MemoryProfiler(config, reporter));
+//        }
+//        if (config.isProfilerEnabled(CPUTimeProfiler.class.getSimpleName())) {
+//            registerProfiler(new CPUTimeProfiler(config, reporter));
+//        }
 
         // open reporter if required
         reporter.start();

@@ -85,4 +85,8 @@ public class Config {
     public Boolean getBooleanOrDefault(Map<String, String> config, String key, Boolean def) {
         return config.containsKey(key) ? Boolean.valueOf(config.get(key)) : def;
     }
+
+    public Boolean getBooleanOrDefault(String key, Boolean def) {
+        return getBooleanOrDefault(mainConfig, key, def);
+    }
 }
