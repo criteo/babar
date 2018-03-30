@@ -16,3 +16,4 @@ target/
 **/dependency-reduced-pom.xml
 wordcount_output/
 **/output
+**/bin/
