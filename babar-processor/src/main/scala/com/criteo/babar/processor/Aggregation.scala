@@ -173,7 +173,8 @@ case class TracesAggregation2(allowedPrefixes: Set[String],
       val filteredSplits = if (maxDepth > 0) splits.take(maxDepth) else splits
 
       filteredSplits.foldLeft(root){ (parent, method) =>
-        val children = parent.children.getOrElseUpdate(method, new TraceNode(method))
+        val children = parent.children.getOrElseUpdate(method, new TraceNode(method, new MutableLong(g.timestamp)))
+        if (children.firstTimestamp.getValue > g.timestamp) children.firstTimestamp.setValue(g.timestamp)
         children.value.add(samplesCount)
         children
       }

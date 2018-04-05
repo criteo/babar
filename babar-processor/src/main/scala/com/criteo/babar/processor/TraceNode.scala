@@ -6,6 +6,7 @@ import scala.collection.mutable
 import scala.util.parsing.json.{JSONArray, JSONObject}
 
 class TraceNode(val name: String,
+                val firstTimestamp: MutableLong = new MutableLong(0L),
                 val value: MutableLong = new MutableLong(0L),
                 val children: mutable.Map[String, TraceNode] = mutable.Map.empty) {
 
@@ -13,7 +14,7 @@ class TraceNode(val name: String,
     JSONObject(Map(
       "name" -> name,
       "value" -> value.getValue,
-      "children" -> JSONArray(children.values.toList.map(_.json()))
+      "children" -> JSONArray(children.values.toList.sortBy(_.firstTimestamp.getValue).map(_.json()))
     ))
   }
 }
