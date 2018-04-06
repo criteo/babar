@@ -7,10 +7,7 @@ object IOUtils {
   private val REPLACE_PATTERN = "{{DATA}}"
 
   def copyFromResources(inputPath: String, outputPath: String, data: String): Unit = {
-
-    val resource = getClass.getClassLoader.getResource(inputPath).getPath
-
-    var fis: FileInputStream = null
+    var is: InputStream = null
     var isr: InputStreamReader = null
     var in: BufferedReader = null
 
@@ -18,8 +15,8 @@ object IOUtils {
     var out: OutputStreamWriter = null
 
     try {
-      fis = new FileInputStream(resource)
-      isr = new InputStreamReader(fis, "UTF-8")
+      is = getClass.getClassLoader.getResourceAsStream(inputPath)
+      isr = new InputStreamReader(is, "UTF-8")
       in = new BufferedReader(isr)
 
       fos = new FileOutputStream(outputPath)
@@ -34,7 +31,7 @@ object IOUtils {
     }
     finally {
       if (isr != null) isr.close()
-      if (fis != null) fis.close()
+      if (is != null) is.close()
 
       if (out != null) out.close()
       if (fos != null) fos.close()
