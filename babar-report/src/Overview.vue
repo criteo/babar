@@ -22,31 +22,31 @@ export default {
         containers: [
           {
             name: "containers",
-            time: window.metrics["containers"].time,
-            values: window.metrics["containers"].values
+            time: window.data["containers"].time,
+            values: window.data["containers"].values
           }
         ]/*,
         memory: [
           {
             name: "total reserved",
-            time: window.metrics.time,
-            values: window.metrics["total reserved"]
+            time: window.data.time,
+            values: window.data["total reserved"]
           },
           {
             name: "total RSS memory",
-            time: window.metrics.time,
-            values: window.metrics["total RSS memory"]
+            time: window.data.time,
+            values: window.data["total RSS memory"]
           },
           {
             name: "total used heap",
-            time: window.metrics.time,
-            values: window.metrics["total used heap"],
+            time: window.data.time,
+            values: window.data["total used heap"],
             stack: true
           },
           {
             name: "total used off-heap",
-            time: window.metrics.time,
-            values: window.metrics["total used off-heap"],
+            time: window.data.time,
+            values: window.data["total used off-heap"],
             stack: true
           }
         ]*/

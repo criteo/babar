@@ -121,7 +121,7 @@ export default {
         },
         updateTree() {
             this.clean()
-            const { tree, searchResult } = filterAndSearchTree(window.metrics["traces"], this.whitelist, this.blacklist, this.search)
+            const { tree, searchResult } = filterAndSearchTree(window.data["traces"], this.whitelist, this.blacklist, this.search)
             this.tree = tree
             this.searchResult = searchResult
             this.refresh()
