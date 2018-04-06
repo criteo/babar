@@ -8,15 +8,18 @@ import java.io.IOException;
 
 public class LogReporter extends Reporter {
 
+    public static final String LOG_DIR_KEY = "dir";
+
     private final static String LINE_PREFIX = "BABAR";
     private final static String LINE_SEPARATOR = "\t";
 
-    private static final String logDir = getLogDir();
+    private final String logDir;
     private BufferedWriter bw = null;
     private FileWriter fw = null;
 
     public LogReporter(AgentConfig config) {
         super(config);
+        this.logDir = getLogDir(config);
     }
 
     @Override
@@ -61,8 +64,9 @@ public class LogReporter extends Reporter {
         }
     }
 
-    static private String getLogDir() {
-        String logDir = System.getProperty("yarn.app.container.log.dir");
+    static private String getLogDir(AgentConfig config) {
+        String logDir = config.getString(LOG_DIR_KEY);
+        if (logDir == null) logDir = System.getProperty("yarn.app.container.log.dir");
         if (logDir == null) logDir = System.getProperty("spark.yarn.app.container.log.dir");
         if (logDir == null) logDir = "./log";
         return logDir;
