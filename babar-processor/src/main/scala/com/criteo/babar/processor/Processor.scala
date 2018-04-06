@@ -34,7 +34,8 @@ object Processor {
     // parse arguments
     val conf = new Conf(args)
     val timePrecMs = conf.timePrecision()
-    val timePrecSec = timePrecMs / 1000D
+    val sec = 1 / 1000D
+    val timePrecSec = timePrecMs * sec
     val MB = 1D / 1024D / 1024D
     val MBSec = timePrecSec * MB
 
@@ -53,7 +54,7 @@ object Processor {
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "accumulated used heap" ->
         (FilterMetric("JVM_HEAP_MEMORY_USED_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
-          aggregate AvgByContainerAndTime() and IntegrateOverAllContainersByTime()),
+          aggregate AvgByContainerAndTime() and AccumulateOverAllContainersByTime()),
       "total used off-heap" ->
         (FilterMetric("JVM_OFF_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
@@ -62,7 +63,7 @@ object Processor {
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "accumulated used off-heap" ->
         (FilterMetric("JVM_OFF_HEAP_MEMORY_USED_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
-          aggregate AvgByContainerAndTime() and IntegrateOverAllContainersByTime()),
+          aggregate AvgByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // Committed
       "total committed heap" ->
         (FilterMetric("JVM_HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
@@ -85,7 +86,7 @@ object Processor {
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "accumulated reserved" ->
         (FilterMetric("JVM_MEMORY_RESERVED_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
-          aggregate AvgByContainerAndTime() and IntegrateOverAllContainersByTime()),
+          aggregate AvgByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // RSS
       "total RSS memory" ->
         (FilterMetric("PROC_RSS_MEMORY_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
@@ -95,38 +96,42 @@ object Processor {
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "accumulated RSS memory" ->
         (FilterMetric("PROC_RSS_MEMORY_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
-          aggregate AvgByContainerAndTime() and IntegrateOverAllContainersByTime()),
+          aggregate AvgByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // ------------------------------ CPU ----------------------------------
       "max host CPU load" ->
         (FilterMetric("JVM_HOST_CPU_USAGE") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
+          aggregate AvgByContainerAndTime() and MaxOverAllContainersByTime()),
       "median host CPU load" ->
         (FilterMetric("JVM_HOST_CPU_USAGE") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
       "max JVM CPU load" ->
         (FilterMetric("JVM_CPU_USAGE") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
+          aggregate AvgByContainerAndTime() and MaxOverAllContainersByTime()),
       "median JVM CPU load" ->
         (FilterMetric("JVM_CPU_USAGE") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
       "median JVM CPU load" ->
         (FilterMetric("JVM_CPU_USAGE") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
-      // TODO accumulated CPU Time
-      // ------------------------------ GC ----------------------------------
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
+      "accumulated JVM CPU time" ->
+        (FilterMetric("JVM_CPU_TIME") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+      // ------------------------------ GC ----------------------------------*/
       "max GC ratio" ->
-        (FilterMetric("JVM_GC_RATIO") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
+        (FilterMetric("JVM_GC_RATIO") and Cap(0D, 1D) and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MaxOverAllContainersByTime()),
       "median GC ratio" ->
-        (FilterMetric("JVM_GC_RATIO") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
+        (FilterMetric("JVM_GC_RATIO") and Cap(0D, 1D) and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
       "median minor GC ratio" ->
-        (FilterMetric("JVM_MINOR_GC_RATIO") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
+        (FilterMetric("JVM_MINOR_GC_RATIO") and Cap(0D, 1D) and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
       "median major GC ratio" ->
-        (FilterMetric("JVM_MAJOR_GC_RATIO") and DiscretizeTime(timePrecMs)
-          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
-      // TODO accumulated GC Time
+        (FilterMetric("JVM_MAJOR_GC_RATIO") and Cap(0D, 1D) and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
+      "accumulated GC CPU time" ->
+        (FilterMetric("JVM_GC_CPU_TIME") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // ------------------------------ Traces ----------------------------------
       "traces" ->
         (FilterMetric("CPU_TRACES")

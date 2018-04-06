@@ -28,6 +28,12 @@ case class FilterMetric(metric: String) extends Transformation2[Gauge, Gauge] {
   override def transform(g: Gauge): Iterable[Gauge] = if (metric == g.metric) Some(g) else None
 }
 
+case class Cap(min: Double, max: Double) extends Transformation2[Gauge, Gauge] {
+  override def transform(g: Gauge): Iterable[Gauge] = {
+    Some(g.copy(value = math.max(0, math.min(1, g.value))))
+  }
+}
+
 case class Scale(scale: Double) extends Transformation2[Gauge, Gauge] {
   override def transform(g: Gauge): Iterable[Gauge] = {
     Some(g.copy(value = g.value * scale))
@@ -105,6 +111,8 @@ case class AvgByContainerAndTime() extends AggregationByContainerAndTime((0D, 0L
   { case ((sum, count), v) => (sum + v, count + 1L)})(
   { case (sum, count) => sum / count })
 
+case class SumByContainerAndTime() extends AggregationByContainerAndTime(0D)((sum, v) => sum + v)(identity)
+
 class AggregationOverAllContainersByTime[V, ACC, OUT](zero: ACC)(val acc: (ACC, V) => ACC)(val fin: ACC => OUT)  extends Aggregation2[((String, Long), V), (Long, OUT)] {
 
   private val map = mutable.SortedMap[Long, ACC]()
@@ -112,6 +120,7 @@ class AggregationOverAllContainersByTime[V, ACC, OUT](zero: ACC)(val acc: (ACC, 
   override def aggregate(tuple: ((String, Long), V)): Unit = {
     val ((_, time), value) = tuple
     val prev = map.getOrElseUpdate(time, zero)
+    //println(s"acc($prev, $value) = ${acc(prev, value)}")
     map.put(time, acc(prev, value))
   }
 
@@ -139,21 +148,17 @@ case class MedianOverAllContainersByTime()
     vec => {
       val sorted = vec.sorted
       val size = vec.size
-      vec(size/2)
+      if(size > 0) vec(size/2)
+      else 0D
     }
   )
 
-case class IntegrateOverAllContainersByTime() extends AggregationOverAllContainersByTime[Double, Double, Double](0D)(
+case class AccumulateOverAllContainersByTime() extends AggregationOverAllContainersByTime[Double, Double, Double](0D)(
   (acc, v: Double) => acc + v)(identity) {
 
   override def values(): Iterable[(Long, Double)] = {
     val res = super.values()
-    if (res.isEmpty) return Iterable()
-
-    val (firstTime, firstVal) = res.head
-    res.scanLeft((firstTime, 0D)){ case ((prevTime, prevVal), (time, value)) =>
-      val timeDelta = time - prevTime
-      val valueByTime = value * timeDelta
+    res.scanLeft((0L, 0D)){ case ((prevTime, prevVal), (time, value)) =>
       (time, prevVal + value)
     }.drop(1) // drop zero value
   }

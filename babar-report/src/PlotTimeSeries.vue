@@ -59,7 +59,8 @@ export default {
                 name: this.yAxis
             },
             series: this.series.map(s => ({
-                animationDuration: function(idx) { return 500} ,
+                animationDuration: function(idx) { return 500},
+                color: s.color,
                 name: s.name,
                 type: 'line',
                 symbolSize: 4,

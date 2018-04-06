@@ -62,15 +62,16 @@ public class JVMProfiler extends SamplingProfiler {
 
         // Compute metrics once values are fetched
         // CPU
-        long deltaJvmCpuTime = totalJvmCpuTime - prevJvmCpuTime.getAndSet(totalJvmCpuTime);
-        double jvmCoresUsage = deltaJvmCpuTime / (double)deltaLastSampleMs;
+        double deltaJvmCpuTime = totalJvmCpuTime - prevJvmCpuTime.getAndSet(totalJvmCpuTime);
+        double jvmCoresUsage = deltaLastSampleMs == 0D ? 0D : deltaJvmCpuTime / (double)deltaLastSampleMs;
         double jvmCpuUsage = jvmCoresUsage / availableCpu;
         double hostCoresLoad = hostCpuLoad * availableCpu;
         // GC
-        long deltaGcTime = totalGcTime - prevGcTime.getAndSet(totalGcTime);
-        double gcRatio = totalGcTime / (double)deltaLastSampleMs;
-        double minorGcRatio = deltaMinorGcTime / (double)deltaLastSampleMs;
-        double majorGcRatio = deltaMajorGcTime / (double)deltaLastSampleMs;
+        double deltaGcTime = totalGcTime - prevGcTime.getAndSet(totalGcTime);
+        double gcRatio = deltaLastSampleMs == 0D ? 0D : deltaGcTime / (double)deltaLastSampleMs;
+        double minorGcRatio = deltaLastSampleMs == 0D ? 0D : deltaMinorGcTime / (double)deltaLastSampleMs;
+        double majorGcRatio = deltaLastSampleMs == 0D ? 0D : deltaMajorGcTime / (double)deltaLastSampleMs;
+        double deltaGcCpuTime = gcRatio * deltaJvmCpuTime;
         // Memory
         double usedHeapBytes = heapUsage.getUsed();
         double committedHeapBytes = heapUsage.getCommitted();
@@ -80,11 +81,13 @@ public class JVMProfiler extends SamplingProfiler {
 
         // report computed metrics
         // CPU
+        reporter.reportEvent("JVM_CPU_TIME", "", deltaJvmCpuTime, sampleTimeMs);
         reporter.reportEvent("JVM_CPU_USAGE", "", jvmCpuUsage, sampleTimeMs);
         reporter.reportEvent("JVM_CORES_USAGE", "", jvmCoresUsage, sampleTimeMs);
         reporter.reportEvent("JVM_HOST_CPU_USAGE", "", hostCpuLoad, sampleTimeMs);
         reporter.reportEvent("JVM_HOST_CORES_USAGE", "", hostCoresLoad, sampleTimeMs);
         // GC
+        reporter.reportEvent("JVM_GC_CPU_TIME", "", deltaGcCpuTime, sampleTimeMs);
         reporter.reportEvent("JVM_GC_RATIO", "", gcRatio, sampleTimeMs);
         reporter.reportEvent("JVM_MINOR_GC_RATIO", "", minorGcRatio, sampleTimeMs);
         reporter.reportEvent("JVM_MAJOR_GC_RATIO", "", majorGcRatio, sampleTimeMs);
