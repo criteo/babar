@@ -156,7 +156,7 @@ object Processor {
   }
 
   def buildJSON(aggregations: Map[String, Aggregation2[_, _]]): JSONObject = {
-    val jsons = aggregations.map{ case (key, agg) => (key, agg.json()) }
+    val jsons = aggregations.flatMap{ case (key, agg) => agg.json().map((key, _))}
     JSONObject(jsons)
   }
 }

@@ -19,7 +19,7 @@ trait Transformation2[-IN, +OUT] {
     new Aggregation2[IN, NOUT] {
       override def aggregate(value: IN): Unit = transform(value).foreach(aggregation.aggregate)
       override def values(): Iterable[NOUT] = aggregation.values()
-      override def json(): JSONObject = aggregation.json()
+      override def json(): Option[JSONObject] = aggregation.json()
     }
   }
 }
@@ -47,7 +47,7 @@ trait Aggregation2[-IN, +OUT] {
 
   def values(): Iterable[OUT]
 
-  def json(): JSONObject
+  def json(): Option[JSONObject]
 
   def and[NOUT](next: Aggregation2[OUT, NOUT]): Aggregation2[IN, NOUT] = {
     val prev = this
@@ -60,7 +60,7 @@ trait Aggregation2[-IN, +OUT] {
         prev.values().foreach(next.aggregate)
         next.values()
       }
-      override def json(): JSONObject = {
+      override def json(): Option[JSONObject] = {
         values()
         next.json()
       }
@@ -79,8 +79,10 @@ class AggregationByContainerAndTime[ACC, OUT](val zero: ACC)(val fn: (ACC, Doubl
 
   override def values(): Iterable[((String, Long), OUT)] = map.mapValues(fin)
 
-  override def json(): JSONObject = {
+  override def json(): Option[JSONObject] = {
     val res = values()
+    if (res.isEmpty) return None
+
     val byContainer = res
       .map{ case ((container, time), value) => (container, time, value) }
       .groupBy(_._1)
@@ -89,7 +91,7 @@ class AggregationByContainerAndTime[ACC, OUT](val zero: ACC)(val fn: (ACC, Doubl
           val vals = timeValues.map(_._3).toList
         container -> Map("time" -> JSONArray(times), "values" -> JSONArray(vals))
       }
-    JSONObject(byContainer)
+    Some(JSONObject(byContainer))
   }
 }
 
@@ -115,11 +117,13 @@ class AggregationOverAllContainersByTime[V, ACC, OUT](zero: ACC)(val acc: (ACC, 
 
   override def values(): Iterable[(Long, OUT)] = map.mapValues(fin)
 
-  override def json(): JSONObject = {
+  override def json(): Option[JSONObject]  = {
     val res = values()
+    if (res.isEmpty) return None
+
     val times = res.map(_._1).toList
     val vals = res.map(_._2).toList
-    JSONObject(Map("time" -> JSONArray(times), "values" -> JSONArray(vals)))
+    Some(JSONObject(Map("time" -> JSONArray(times), "values" -> JSONArray(vals))))
   }
 }
 
@@ -192,7 +196,9 @@ case class TracesAggregation2(minSampleRatio: Double,
     }
   }
 
-  override def json(): JSONObject = values().head.json()
+  override def json(): Option[JSONObject] = {
+    val res = values()
+    if (res.head.value.getValue == 0L) None
+    else Some(values().head.json())
+  }
 }
-
-
