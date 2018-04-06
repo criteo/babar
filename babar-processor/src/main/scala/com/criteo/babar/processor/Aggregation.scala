@@ -144,6 +144,8 @@ case class IntegrateOverAllContainersByTime() extends AggregationOverAllContaine
 
   override def values(): Iterable[(Long, Double)] = {
     val res = super.values()
+    if (res.isEmpty) return Iterable()
+
     val (firstTime, firstVal) = res.head
     res.scanLeft((firstTime, 0D)){ case ((prevTime, prevVal), (time, value)) =>
       val timeDelta = time - prevTime
