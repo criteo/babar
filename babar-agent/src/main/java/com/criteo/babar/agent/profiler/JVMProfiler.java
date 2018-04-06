@@ -17,7 +17,6 @@ public class JVMProfiler extends SamplingProfiler {
     private final long reservedMB;
 
     private final AtomicLong prevJvmCpuTime = new AtomicLong(0L);
-    private final AtomicLong prevGcTime = new AtomicLong(0L);
     private final AtomicLong minorGcTime = new AtomicLong(0L);
     private final AtomicLong majorGcTime = new AtomicLong(0L);
 
@@ -53,9 +52,9 @@ public class JVMProfiler extends SamplingProfiler {
         long totalJvmCpuTime = JVMUtils.getAccumulatedJVMCPUTime() / NANOS_TO_MILLIS;
         double hostCpuLoad = JVMUtils.getSystemCPULoad();
         // GC
-        long totalGcTime = JVMUtils.getAccumulatedGCTime();
         double deltaMinorGcTime = minorGcTime.getAndSet(0L);
         double deltaMajorGcTime = majorGcTime.getAndSet(0L);
+        double deltaGcTime = deltaMinorGcTime + deltaMajorGcTime;
         // Memory
         MemoryUsage heapUsage = JVMUtils.getHeapMemoryUsed();
         MemoryUsage nonHeapUsage = JVMUtils.getNonHeapMemoryUsed();
@@ -67,7 +66,6 @@ public class JVMProfiler extends SamplingProfiler {
         double jvmCpuUsage = jvmCoresUsage / availableCpu;
         double hostCoresLoad = hostCpuLoad * availableCpu;
         // GC
-        double deltaGcTime = totalGcTime - prevGcTime.getAndSet(totalGcTime);
         double gcRatio = deltaLastSampleMs == 0D ? 0D : deltaGcTime / (double)deltaLastSampleMs;
         double minorGcRatio = deltaLastSampleMs == 0D ? 0D : deltaMinorGcTime / (double)deltaLastSampleMs;
         double majorGcRatio = deltaLastSampleMs == 0D ? 0D : deltaMajorGcTime / (double)deltaLastSampleMs;

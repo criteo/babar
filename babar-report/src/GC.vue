@@ -4,7 +4,7 @@
     <b-container class="text-center" fluid>
       <PlotTimeSeries title="Minor & Major median GC ratio" yAxis="%time" :series="series.minorMajor" />
       <PlotTimeSeries title="Max & Median GC ratio" yAxis="%time" :series="series.maxMedian" />
-      <PlotTimeSeries title="Accumulated JVM CPU and GC time" yAxis="sec" :series="series.accumulatedCpuGc" />
+      <PlotTimeSeries title="Accumulated JVM CPU time and GC CPU time" yAxis="sec" :series="series.accumulatedCpuGc" />
     </b-container>
 
   </div>

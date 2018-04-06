@@ -112,13 +112,4 @@ public class ProcFSUtilsTest {
         assertEquals(880640L, io.readBytes);
         assertEquals(36864L, io.writeBytes);
     }
-
-    // TODO remove
-    @Test
-    public void getChildrenPids2() throws Exception {
-        int self = JVMUtils.getPID();
-        ProcFSUtils.ioWithChildren(self);
-        System.out.println("");
-    }
-
 }

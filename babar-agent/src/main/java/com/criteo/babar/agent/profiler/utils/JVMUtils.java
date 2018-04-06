@@ -1,16 +1,5 @@
 package com.criteo.babar.agent.profiler.utils;
 
-import java.lang.management.ManagementFactory;
-
-import java.lang.management.GarbageCollectorMXBean;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
-import java.lang.management.RuntimeMXBean;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.sun.management.GarbageCollectionNotificationInfo;
 import com.sun.management.OperatingSystemMXBean;
 
@@ -18,6 +7,7 @@ import javax.management.Notification;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationListener;
 import javax.management.openmbean.CompositeData;
+import java.lang.management.*;
 
 public class JVMUtils {
 
@@ -53,18 +43,6 @@ public class JVMUtils {
      */
     public static int getAvailableProcessors() {
         return operatingSystemMXBean.getAvailableProcessors();
-    }
-
-    /**
-     * Returns the accumulated GC time in milliseconds for all available beans
-     * @return          the accumulated GC time
-     */
-    public static long getAccumulatedGCTime() {
-        long gcTime = 0L;
-        for (GarbageCollectorMXBean bean: ManagementFactory.getGarbageCollectorMXBeans()) {
-            gcTime += bean.getCollectionTime();
-        }
-        return gcTime;
     }
 
     /**
