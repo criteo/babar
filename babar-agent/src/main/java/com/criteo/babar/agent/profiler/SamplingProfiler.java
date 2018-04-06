@@ -15,6 +15,7 @@ public abstract class SamplingProfiler extends Profiler implements SamplingSched
     public SamplingProfiler(AgentConfig agentConfig, Reporter reporter) {
         super(agentConfig, reporter);
         this.profilingIntervalMs = Math.max(1, profilerConfig.getIntOrDefault("profilingMs", 1000));
+        System.out.println(getClass().getName() +  " will sample every " + profilingIntervalMs + " ms");
     }
 
     @Override

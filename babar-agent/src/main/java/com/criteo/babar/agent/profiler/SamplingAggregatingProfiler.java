@@ -17,7 +17,7 @@ public abstract class SamplingAggregatingProfiler extends SamplingProfiler imple
 
         this.reportingIntervalMs = Math.max(1, profilerConfig.getIntOrDefault("reportingMs", 10000));
         this.reportAfterSamples = Math.max(1, reportingIntervalMs / profilingIntervalMs);
-        System.out.println("Will sample every " + profilingIntervalMs + " ms and report every " + reportingIntervalMs + " ms");
+        System.out.println(getClass().getName() + " will sample every " + profilingIntervalMs + " ms and report every " + reportingIntervalMs + " ms");
     }
 
     public abstract void start(long startTimeMs) throws Exception;
