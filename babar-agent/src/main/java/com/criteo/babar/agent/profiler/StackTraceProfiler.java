@@ -23,6 +23,16 @@ public class StackTraceProfiler extends SamplingAggregatingProfiler {
     }
 
     @Override
+    protected int getDefaultProfilingMs() {
+        return 100; // profile every 100 ms
+    }
+
+    @Override
+    protected int getDefaultReportingMs() {
+        return 60 * 1000 * 10; // report every 10 minutes as stack traces are heavy
+    }
+
+    @Override
     public void sample(long sampleTimeMs, long deltaLastSampleMs) {
         for (ThreadInfo thread : getAllRunnableThreads()) {
             // certain threads do not have stack traceCache

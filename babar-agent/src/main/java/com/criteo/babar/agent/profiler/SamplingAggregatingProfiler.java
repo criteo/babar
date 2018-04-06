@@ -15,9 +15,14 @@ public abstract class SamplingAggregatingProfiler extends SamplingProfiler imple
     public SamplingAggregatingProfiler(AgentConfig agentConfig, Reporter reporter) {
         super(agentConfig, reporter);
 
-        this.reportingIntervalMs = Math.max(1, profilerConfig.getIntOrDefault("reportingMs", 10000));
+        this.reportingIntervalMs = Math.max(1, profilerConfig.getIntOrDefault("reportingMs", getDefaultReportingMs()));
         this.reportAfterSamples = Math.max(1, reportingIntervalMs / profilingIntervalMs);
         System.out.println(getClass().getName() + " will sample every " + profilingIntervalMs + " ms and report every " + reportingIntervalMs + " ms");
+    }
+
+    // override this method to change the default reporting frequency
+    protected int getDefaultReportingMs() {
+        return 10000;
     }
 
     public abstract void start(long startTimeMs) throws Exception;
