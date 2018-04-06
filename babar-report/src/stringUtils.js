@@ -15,5 +15,9 @@ export default {
         hash  = ((hash << 5) - hash + str.charCodeAt(i++)) << 0;
     }
     return hash;
+  },
+
+  randomUUID() {
+    return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
   }
 };

@@ -1,7 +1,7 @@
 <template>
   <div id="overview">
 
-    <PlotTimeSeries title="Containers" :series="series.containers" />
+    <PlotTimeSeries title="Containers"  yAxis="containers" :series="series.containers" />
     <!--<PlotTimeSeries title="Memory" :series="series.memory" />-->
 
   </div>
