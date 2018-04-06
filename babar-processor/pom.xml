@@ -77,7 +77,20 @@
     </dependencies>
 
     <build>
+
+        <resources>
+            <resource>
+                <directory>../babar-report/dist</directory>
+            </resource>
+        </resources>
+
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+            </plugin>
 
             <!-- Scala Compiler -->
             <plugin>
