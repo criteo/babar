@@ -7,7 +7,7 @@
     <groupId>org.bhnte</groupId>
     <artifactId>babar</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <modules>
         <module>babar-agent</module>
         <module>babar-report</module>
