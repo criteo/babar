@@ -155,17 +155,13 @@ case class IntegrateOverAllContainersByTime() extends AggregationOverAllContaine
   }
 }
 
-case class TracesAggregation2(allowedPrefixes: Set[String],
-                              minSampleRatio: Double,
+case class TracesAggregation2(minSampleRatio: Double,
                               maxDepth: Int) extends Aggregation2[Gauge, TraceNode] {
 
   private val root = new TraceNode("root")
 
   override def aggregate(g: Gauge): Unit = {
-    val splits = g.label.split('|')
-      .drop(1) // drop the thread name as we aggregate over all threads
-      // drop until we match a custom prefix
-      .dropWhile(m => allowedPrefixes.nonEmpty && !allowedPrefixes.exists(m.startsWith))
+    val splits = g.label.split('|').drop(1) // drop thread name at start
 
     if (splits.nonEmpty) {
       val samplesCount = g.value.toLong
