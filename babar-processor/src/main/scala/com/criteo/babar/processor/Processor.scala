@@ -45,54 +45,54 @@ object Processor {
         (DiscretizeTime(timePrecMs) aggregate OneByContainerAndTime() and SumOverAllContainersByTime()),
       // ------------------------------ Memory ----------------------------------
       "total used heap" ->
-        (FilterMetric("HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
       "max used heap" ->
-        (FilterMetric("HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "total used off-heap" ->
-        (FilterMetric("OFF_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_OFF_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
       "max used off-heap" ->
-        (FilterMetric("OFF_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_OFF_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "total committed heap" ->
-        (FilterMetric("HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
       "max committed heap" ->
-        (FilterMetric("HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "total committed off-heap" ->
-        (FilterMetric("OFF_HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_OFF_HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
       "max committed off-heap" ->
-        (FilterMetric("OFF_HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_OFF_HEAP_MEMORY_COMMITTED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "total reserved" ->
-        (FilterMetric("MEMORY_RESERVED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_MEMORY_RESERVED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
       "max reserved" ->
-        (FilterMetric("MEMORY_RESERVED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_MEMORY_RESERVED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "accumulated reserved" ->
-        (FilterMetric("MEMORY_RESERVED_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_MEMORY_RESERVED_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and IntegrateOverAllContainersByTime()),
       // TODO change all RSS memory to use right key
       "total RSS memory" ->
-        (FilterMetric("OFF_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("PROC_RSS_MEMORY_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
       "max RSS memory" ->
-        (FilterMetric("OFF_HEAP_MEMORY_USED_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("PROC_RSS_MEMORY_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "accumulated RSS memory" ->
-        (FilterMetric("OFF_HEAP_MEMORY_USED_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
+        (FilterMetric("PROC_RSS_MEMORY_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and IntegrateOverAllContainersByTime()),
       // ------------------------------ CPU ----------------------------------
       "max host CPU load" ->
-        (FilterMetric("SYSTEM_CPU_LOAD") and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_HOST_CPU_USAGE") and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "median host CPU load" ->
-        (FilterMetric("SYSTEM_CPU_LOAD") and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_HOST_CPU_USAGE") and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
       "max JVM CPU load" ->
         (FilterMetric("JVM_CPU_USAGE") and DiscretizeTime(timePrecMs)
@@ -106,16 +106,16 @@ object Processor {
       // TODO accumulated CPU Time
       // ------------------------------ GC ----------------------------------
       "max GC ratio" ->
-        (FilterMetric("GC_RATIO") and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_GC_RATIO") and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "median GC ratio" ->
-        (FilterMetric("GC_RATIO") and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_GC_RATIO") and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
       "median minor GC ratio" ->
-        (FilterMetric("MINOR_GC_RATIO") and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_MINOR_GC_RATIO") and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
       "median major GC ratio" ->
-        (FilterMetric("MAJOR_GC_RATIO") and DiscretizeTime(timePrecMs)
+        (FilterMetric("JVM_MAJOR_GC_RATIO") and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
       // TODO accumulated GC Time
       // ------------------------------ Traces ----------------------------------
