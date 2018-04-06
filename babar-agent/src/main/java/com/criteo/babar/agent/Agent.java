@@ -1,9 +1,7 @@
 package com.criteo.babar.agent;
 
 import com.criteo.babar.agent.config.AgentConfig;
-import com.criteo.babar.agent.profiler.CPUTimeProfiler;
 import com.criteo.babar.agent.profiler.JVMProfiler;
-import com.criteo.babar.agent.profiler.MemoryProfiler;
 import com.criteo.babar.agent.profiler.ProcFSProfiler;
 import com.criteo.babar.agent.profiler.Profiler;
 import com.criteo.babar.agent.profiler.SamplingProfiler;
@@ -21,67 +19,62 @@ public class Agent {
 
     private Agent() { }
 
-    private static Set<SamplingProfiler> samplingProfilers = new HashSet<>();
-    private static Set<Profiler> profilers = new HashSet<>();
-
     public static void agentmain(final String args, final Instrumentation instrumentation) {
         premain(args, instrumentation);
     }
 
     /**
-     * Start the JVM profiler
+     * Start the JVM agent
      */
     public static void premain(final String args, final Instrumentation instrumentation) {
 
         // parse agent arguments
         AgentConfig config = AgentConfig.parse(args);
-        Reporter reporter = new LogReporter(config);
-
-        // register profilers for scheduling
-        if (config.isProfilerEnabled(ProcFSProfiler.class.getSimpleName())) {
-            registerProfiler(new ProcFSProfiler(config, reporter));
-        }
-        if (config.isProfilerEnabled(JVMProfiler.class.getSimpleName())) {
-            registerProfiler(new JVMProfiler(config, reporter));
-        }
-//        if (config.isProfilerEnabled(StackTraceProfiler.class.getSimpleName())) {
-//            registerProfiler(new StackTraceProfiler(config, reporter));
-//        }
-//        if (config.isProfilerEnabled(MemoryProfiler.class.getSimpleName())) {
-//            registerProfiler(new MemoryProfiler(config, reporter));
-//        }
-//        if (config.isProfilerEnabled(CPUTimeProfiler.class.getSimpleName())) {
-//            registerProfiler(new CPUTimeProfiler(config, reporter));
-//        }
 
         // open reporter if required
+        Reporter reporter = new LogReporter(config);
         reporter.start();
 
+        // register profilers for scheduling
+        Set<Profiler> profilers = new HashSet<>();
+
+        if (config.isProfilerEnabled(ProcFSProfiler.class.getSimpleName())) {
+            profilers.add(new ProcFSProfiler(config, reporter));
+        }
+        if (config.isProfilerEnabled(JVMProfiler.class.getSimpleName())) {
+            profilers.add(new JVMProfiler(config, reporter));
+        }
+        if (config.isProfilerEnabled(StackTraceProfiler.class.getSimpleName())) {
+            profilers.add(new StackTraceProfiler(config, reporter));
+        }
+
         // start the profilers. They will be able to profile with their start() methods
-        startStartStopProfilers(reporter);
-        startSamplingProfilers();
+        startProfilers(profilers);
+
+        // add shutdown hook to correctly stop profilers and report last values on exit
+        registerShutdownHook(profilers, reporter);
     }
 
-    private static void registerProfiler(Profiler p) {
-        profilers.add(p);
-        if (p instanceof SamplingProfiler) samplingProfilers.add((SamplingProfiler)p);
-    }
-
-    private static void startStartStopProfilers(Reporter reporter) {
+    private static void startProfilers(Set<Profiler> profilers) {
+        SamplingScheduler profilerSamplingScheduler = new SamplingScheduler();
+        Set<SamplingProfiler> samplingProfilers = new HashSet<>();
         for (Profiler p: profilers){
             try {
                 p.start();
+                if (p instanceof SamplingProfiler) {
+                    samplingProfilers.add((SamplingProfiler)p);
+                }
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        Thread shutdownHook = new Thread(new ShutdownHookWorker(profilers, reporter));
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        // start sampling profilers
+        profilerSamplingScheduler.schedule(samplingProfilers);
     }
 
-    private static void startSamplingProfilers() {
-        SamplingScheduler profilerSamplingScheduler = new SamplingScheduler();
-        profilerSamplingScheduler.schedule(samplingProfilers);
+    private static void registerShutdownHook(Set<Profiler> profilers, Reporter reporter) {
+        Thread shutdownHook = new Thread(new ShutdownHookWorker(profilers, reporter));
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 }
