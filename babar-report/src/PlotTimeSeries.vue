@@ -19,6 +19,9 @@ export default {
         yAxis: {
             required: true
         },
+        yMax: {
+            required: false
+        },
         series: {
             default: () => [],
         }
@@ -56,7 +59,8 @@ export default {
             },
             yAxis: {
                 type: 'value',
-                name: this.yAxis
+                name: this.yAxis,
+                max: this.yMax
             },
             series: this.series.map(s => ({
                 animationDuration: function(idx) { return 500},
