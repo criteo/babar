@@ -27,8 +27,6 @@ object Processor {
 
   val REPORT_TEMPLATE_FILE = "index.html"
 
-  val MIN_TRACES_RATIO = 0.001 // keep only traces that appear in more tham 0.1% of profiles
-
   def main(args: Array[String]): Unit = {
 
     // parse arguments
