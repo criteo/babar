@@ -130,6 +130,9 @@ object Processor {
       "accumulated GC CPU time" ->
         (FilterMetric("JVM_GC_CPU_TIME") and DiscretizeTime(timePrecMs) and Scale(sec)
           aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+      // ------------------------------ Containers ----------------------------------
+      "containers timeline" ->
+        (StartStopContainerTime()),
       // ------------------------------ Traces ----------------------------------
       "traces" ->
         (FilterMetric("CPU_TRACES")

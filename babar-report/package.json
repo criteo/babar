@@ -10,11 +10,13 @@
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
-    "bootstrap-vue": "^2.0.0-rc.2",
+    "bootstrap-vue": "^2.0.0-rc.6",
     "d3-flame-graph": "^2.0.0-alpha4",
     "echarts": "4.0.2",
     "jquery": "^3.2.1",
     "lodash": "^4.17.5",
+    "moment": "^2.22.0",
+    "moment-duration-format": "^2.2.2",
     "vue": "^2.5.11"
   },
   "browserslist": [

@@ -3,7 +3,7 @@ package com.criteo.babar.processor
 import org.apache.commons.lang3.mutable.MutableLong
 
 import scala.collection.mutable
-import scala.util.parsing.json.{JSONArray, JSONObject}
+import scala.util.parsing.json.{JSONArray, JSONObject, JSONType}
 
 
 trait Transformation2[-IN, +OUT] {
@@ -19,7 +19,7 @@ trait Transformation2[-IN, +OUT] {
     new Aggregation2[IN, NOUT] {
       override def aggregate(value: IN): Unit = transform(value).foreach(aggregation.aggregate)
       override def values(): Iterable[NOUT] = aggregation.values()
-      override def json(): Option[JSONObject] = aggregation.json()
+      override def json(): Option[JSONType] = aggregation.json()
     }
   }
 }
@@ -53,7 +53,7 @@ trait Aggregation2[-IN, +OUT] {
 
   def values(): Iterable[OUT]
 
-  def json(): Option[JSONObject]
+  def json(): Option[JSONType]
 
   def and[NOUT](next: Aggregation2[OUT, NOUT]): Aggregation2[IN, NOUT] = {
     val prev = this
@@ -66,7 +66,7 @@ trait Aggregation2[-IN, +OUT] {
         prev.values().foreach(next.aggregate)
         next.values()
       }
-      override def json(): Option[JSONObject] = {
+      override def json(): Option[JSONType] = {
         values()
         next.json()
       }
@@ -85,7 +85,7 @@ class AggregationByContainerAndTime[ACC, OUT](val zero: ACC)(val fn: (ACC, Doubl
 
   override def values(): Iterable[((String, Long), OUT)] = map.mapValues(fin)
 
-  override def json(): Option[JSONObject] = {
+  override def json(): Option[JSONType] = {
     val res = values()
     if (res.isEmpty) return None
 
@@ -126,7 +126,7 @@ class AggregationOverAllContainersByTime[V, ACC, OUT](zero: ACC)(val acc: (ACC, 
 
   override def values(): Iterable[(Long, OUT)] = map.mapValues(fin)
 
-  override def json(): Option[JSONObject]  = {
+  override def json(): Option[JSONType]  = {
     val res = values()
     if (res.isEmpty) return None
 
@@ -161,6 +161,33 @@ case class AccumulateOverAllContainersByTime() extends AggregationOverAllContain
     res.scanLeft((0L, 0D)){ case ((prevTime, prevVal), (time, value)) =>
       (time, prevVal + value)
     }.drop(1) // drop zero value
+  }
+}
+
+case class StartStopContainerTime() extends Aggregation2[Gauge, (String, (Long, Long))] {
+
+  private val map = mutable.Map[String, (Long, Long)]()
+
+  override def aggregate(g: Gauge): Unit = {
+    val newValue = map.get(g.container) match {
+      case Some((start, stop)) => (math.min(start, g.timestamp), math.max(stop, g.timestamp))
+      case None => (g.timestamp, g.timestamp)
+    }
+    map.put(g.container, newValue)
+  }
+
+  override def values(): Iterable[(String, (Long, Long))] = map.toIterable
+
+  override def json(): Option[JSONType] = {
+    val res = values().toList.sortBy(_._2)
+    if (values().isEmpty) None
+    else Some(JSONArray(res.map{ case (container, (start, stop)) =>
+      JSONObject(Map(
+        "container" -> container,
+        "start" -> start,
+        "stop" -> stop
+      ))
+    }))
   }
 }
 
@@ -201,7 +228,7 @@ case class TracesAggregation2(minSampleRatio: Double,
     }
   }
 
-  override def json(): Option[JSONObject] = {
+  override def json(): Option[JSONType] = {
     val res = values()
     if (res.head.value.getValue == 0L) None
     else Some(values().head.json())

@@ -19,5 +19,10 @@ export default {
 
   randomUUID() {
     return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+  },
+
+  limit(str, length) {
+    if (str.length > length) return str.substring(0, length)
+    return str
   }
 };

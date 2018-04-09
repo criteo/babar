@@ -6,7 +6,7 @@
       <b-navbar-brand>Babar</b-navbar-brand>
       <b-collapse is-nav id="nav_text_collapse">
         <b-navbar-nav>
-          <b-nav-item href="#" @click="tab='overview'">Overview</b-nav-item>
+          <b-nav-item href="#" @click="tab='containers'">Containers</b-nav-item>
           <b-nav-item href="#" @click="tab='memory'">Memory</b-nav-item>
           <b-nav-item href="#" @click="tab='cpu'">CPU</b-nav-item>
           <b-nav-item href="#" @click="tab='gc'">GC</b-nav-item>
@@ -17,7 +17,7 @@
 
    <b-container fluid id="content">
 
-      <Overview v-if="tab=='overview'"/>
+      <Overview v-if="tab=='containers'"/>
       <Memory v-if="tab=='memory'" />
       <GC v-if="tab=='gc'" />
 
@@ -52,7 +52,7 @@ export default {
   },
   data() {
     return {
-      tab: "overview"
+      tab: "containers"
     }
   }
 }

@@ -2,7 +2,8 @@
   <div id="overview">
 
     <PlotTimeSeries title="Containers"  yAxis="containers" :series="series.containers" />
-    <!--<PlotTimeSeries title="Memory" :series="series.memory" />-->
+    <hr>
+    <ContainersTimeline />
 
   </div>
 </template>
@@ -10,11 +11,12 @@
 <script>
 import Vue from 'vue'
 import PlotTimeSeries from './PlotTimeSeries.vue'
+import ContainersTimeline from './ContainersTimeline.vue'
 
 export default {
   name: 'Babar-report',
   components: {
-    PlotTimeSeries
+    PlotTimeSeries, ContainersTimeline
   },
   data() {
     return {
