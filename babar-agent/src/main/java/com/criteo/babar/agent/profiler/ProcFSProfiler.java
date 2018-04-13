@@ -103,6 +103,7 @@ public class ProcFSProfiler extends SamplingProfiler {
 
         double userTicksDelta = userTicks - prevUserCpuTicks.getAndSet(userTicks);
         double systemTicksDelta = systemTicks - prevSystemCpuTicks.getAndSet(systemTicks);
+        double treeTicksDelta = userTicksDelta + systemTicksDelta;
         double hostTotalTicksDelta = hostTotalTicks - prevHostTotalCpuTicks.getAndSet(hostTotalTicks);
         double hostActiveTicksDelta = hostActiveTicks - prevHostActiveCpuTicks.getAndSet(hostActiveTicks);
         double deltaReadBytes = readBytes - prevReadBytes.getAndSet(readBytes);
@@ -110,12 +111,11 @@ public class ProcFSProfiler extends SamplingProfiler {
 
         double deltaLastSampleSec = deltaLastSampleMs / 1000D;
 
+        double treeCpuTime = treeTicksDelta * OSUtils.getJiffyLengthInMillis();
         double userCpuLoad = userTicksDelta / hostTotalTicksDelta;
         double systemCpuLoad = systemTicksDelta / hostTotalTicksDelta;
         double hostCpuLoad = hostActiveTicksDelta / hostTotalTicksDelta;
         double appCpuLoad = userCpuLoad + systemCpuLoad;
-        double deltaReadBytesPerSec = deltaReadBytes / deltaLastSampleSec;
-        double deltaWriteBytesPerSec = deltaWriteBytes / deltaLastSampleSec;
 
         reporter.reportEvent("PROC_TREE_RSS_MEMORY_BYTES", "", rssPages * (double)this.pageSizeBytes, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_VIRTUAL_MEMORY_BYTES", "", (double)vMemBytes, sampleTimeMs);
@@ -123,7 +123,8 @@ public class ProcFSProfiler extends SamplingProfiler {
         reporter.reportEvent("PROC_TREE_KERNEL_MODE_CPU_LOAD", "", systemCpuLoad, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_CPU_LOAD", "", appCpuLoad, sampleTimeMs);
         reporter.reportEvent("PROC_HOST_CPU_LOAD", "", hostCpuLoad, sampleTimeMs);
-        reporter.reportEvent("PROC_TREE_READ_BYTES_SEC", "", deltaReadBytesPerSec, sampleTimeMs);
-        reporter.reportEvent("PROC_TREE_WRITE_BYTES_SEC", "", deltaWriteBytesPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_CPU_TIME", "", treeCpuTime, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_READ_BYTES", "", deltaReadBytes, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_WRITE_BYTES", "", deltaWriteBytes, sampleTimeMs);
     }
 }

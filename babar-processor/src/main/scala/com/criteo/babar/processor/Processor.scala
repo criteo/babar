@@ -87,27 +87,46 @@ object Processor {
           aggregate AvgByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // RSS
       "total RSS memory" ->
-        (FilterMetric("PROC_RSS_MEMORY_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("PROC_TREE_RSS_MEMORY_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
       "max RSS memory" ->
-        (FilterMetric("PROC_RSS_MEMORY_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+        (FilterMetric("PROC_TREE_RSS_MEMORY_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "accumulated RSS memory" ->
-        (FilterMetric("PROC_RSS_MEMORY_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
+        (FilterMetric("PROC_TREE_RSS_MEMORY_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and AccumulateOverAllContainersByTime()),
-      // ------------------------------ CPU ----------------------------------
-      "max host CPU load" ->
+      // ---------------------------- CPU using ProcFS data -------------------------------
+      "max proc host CPU load" ->
+        (FilterMetric("PROC_HOST_CPU_LOAD") and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MaxOverAllContainersByTime()),
+      "median proc host CPU load" ->
+        (FilterMetric("PROC_HOST_CPU_LOAD") and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
+      "max proc tree CPU load" ->
+        (FilterMetric("PROC_TREE_CPU_LOAD") and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MaxOverAllContainersByTime()),
+      "median proc tree CPU load" ->
+        (FilterMetric("PROC_TREE_CPU_LOAD") and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc tree user CPU load" ->
+        (FilterMetric("PROC_TREE_USER_MODE_CPU_LOAD") and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc tree kernel CPU load" ->
+        (FilterMetric("PROC_TREE_KERNEL_MODE_CPU_LOAD") and DiscretizeTime(timePrecMs)
+          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
+      "accumulated proc tree CPU time" ->
+        (FilterMetric("PROC_TREE_CPU_TIME") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+      // ---------------------------- CPU using JVM data -------------------------------
+      "max JVM host CPU load" ->
         (FilterMetric("JVM_HOST_CPU_USAGE") and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and MaxOverAllContainersByTime()),
-      "median host CPU load" ->
+      "median JVM host CPU load" ->
         (FilterMetric("JVM_HOST_CPU_USAGE") and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
       "max JVM CPU load" ->
         (FilterMetric("JVM_CPU_USAGE") and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and MaxOverAllContainersByTime()),
-      "median JVM CPU load" ->
-        (FilterMetric("JVM_CPU_USAGE") and DiscretizeTime(timePrecMs)
-          aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
       "median JVM CPU load" ->
         (FilterMetric("JVM_CPU_USAGE") and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and MedianOverAllContainersByTime()),
@@ -132,7 +151,7 @@ object Processor {
           aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // ------------------------------ Containers ----------------------------------
       "containers timeline" ->
-        (StartStopContainerTime()),
+        StartStopContainerTime(),
       // ------------------------------ Traces ----------------------------------
       "traces" ->
         (FilterMetric("CPU_TRACES")
