@@ -44,10 +44,4 @@ export default {
 </script>
 
 <style lang="scss">
-.switch-container {
-  padding: 20px 0;
-}
-.memory-swicth {
-  float: right;
-}
 </style>
