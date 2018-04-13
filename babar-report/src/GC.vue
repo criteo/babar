@@ -13,7 +13,6 @@
 <script>
 import Vue from 'vue'
 import PlotTimeSeries from './PlotTimeSeries.vue'
-import $ from 'jquery'
 import _ from 'lodash'
 
 export default {
@@ -22,7 +21,6 @@ export default {
   },
   data() {
     return {
-      large: $(window).width() >= 1000,
       tab: "total",
       series: {
         minorMajor: _.filter([
