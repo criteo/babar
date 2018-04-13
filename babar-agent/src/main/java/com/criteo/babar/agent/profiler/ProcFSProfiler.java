@@ -117,13 +117,13 @@ public class ProcFSProfiler extends SamplingProfiler {
         double deltaReadBytesPerSec = deltaReadBytes / deltaLastSampleSec;
         double deltaWriteBytesPerSec = deltaWriteBytes / deltaLastSampleSec;
 
-        reporter.reportEvent("PROC_RSS_MEMORY_BYTES", "", rssPages * (double)this.pageSizeBytes, sampleTimeMs);
-        reporter.reportEvent("PROC_VIRTUAL_MEMORY_BYTES", "", (double)vMemBytes, sampleTimeMs);
-        reporter.reportEvent("PROC_APP_USER_MODE_CPU_LOAD", "", userCpuLoad, sampleTimeMs);
-        reporter.reportEvent("PROC_APP_KERNEL_MODE_CPU_LOAD", "", systemCpuLoad, sampleTimeMs);
-        reporter.reportEvent("PROC_APP_CPU_LOAD", "", appCpuLoad, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_RSS_MEMORY_BYTES", "", rssPages * (double)this.pageSizeBytes, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_VIRTUAL_MEMORY_BYTES", "", (double)vMemBytes, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_USER_MODE_CPU_LOAD", "", userCpuLoad, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_KERNEL_MODE_CPU_LOAD", "", systemCpuLoad, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_CPU_LOAD", "", appCpuLoad, sampleTimeMs);
         reporter.reportEvent("PROC_HOST_CPU_LOAD", "", hostCpuLoad, sampleTimeMs);
-        reporter.reportEvent("PROC_READ_BYTES_SEC", "", deltaReadBytesPerSec, sampleTimeMs);
-        reporter.reportEvent("PROC_WRITE_BYTES_SEC", "", deltaWriteBytesPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_READ_BYTES_SEC", "", deltaReadBytesPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_WRITE_BYTES_SEC", "", deltaWriteBytesPerSec, sampleTimeMs);
     }
 }
