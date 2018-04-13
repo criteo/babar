@@ -149,6 +149,46 @@ object Processor {
       "accumulated GC CPU time" ->
         (FilterMetric("JVM_GC_CPU_TIME") and DiscretizeTime(timePrecMs) and Scale(sec)
           aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+      // ----------------------------------- IO -------------------------------------
+      //max
+      "max proc read bytes / sec" ->
+        (FilterMetric("PROC_TREE_RCHAR") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and MaxOverAllContainersByTime()),
+      "max proc write bytes / sec" ->
+        (FilterMetric("PROC_TREE_WCHAR") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and MaxOverAllContainersByTime()),
+      "max proc disk read bytes / sec" ->
+        (FilterMetric("PROC_TREE_READ_BYTES") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and MaxOverAllContainersByTime()),
+      "max proc disk write bytes / sec" ->
+        (FilterMetric("PROC_TREE_WRITE_BYTES") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and MaxOverAllContainersByTime()),
+      // median
+      "median proc read bytes / sec" ->
+        (FilterMetric("PROC_TREE_RCHAR") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc write bytes / sec" ->
+        (FilterMetric("PROC_TREE_WCHAR") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc disk read bytes / sec" ->
+        (FilterMetric("PROC_TREE_READ_BYTES") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc disk write bytes / sec" ->
+        (FilterMetric("PROC_TREE_WRITE_BYTES") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate SumByContainerAndTime() and MedianOverAllContainersByTime()),
+      // accumulated
+      "accumulated proc read bytes" ->
+        (FilterMetric("PROC_TREE_RCHAR") and DiscretizeTime(timePrecMs)
+          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+      "accumulated proc write bytes" ->
+        (FilterMetric("PROC_TREE_WCHAR") and DiscretizeTime(timePrecMs)
+          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+      "accumulated proc disk read bytes" ->
+        (FilterMetric("PROC_TREE_READ_BYTES") and DiscretizeTime(timePrecMs)
+          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+      "accumulated proc disk write bytes" ->
+        (FilterMetric("PROC_TREE_WRITE_BYTES") and DiscretizeTime(timePrecMs)
+          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // ------------------------------ Containers ----------------------------------
       "containers timeline" ->
         StartStopContainerTime(),

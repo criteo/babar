@@ -20,6 +20,8 @@ public class ProcFSProfiler extends SamplingProfiler {
     private final AtomicLong prevSystemCpuTicks = new AtomicLong(0L);
     private final AtomicLong prevReadBytes = new AtomicLong(0L);
     private final AtomicLong prevWriteBytes = new AtomicLong(0L);
+    private final AtomicLong prevRChar = new AtomicLong(0L);
+    private final AtomicLong prevWChar = new AtomicLong(0L);
 
     private int pid;
     private long pageSizeBytes;
@@ -89,6 +91,8 @@ public class ProcFSProfiler extends SamplingProfiler {
         long hostActiveTicks = cpuStats.getActiveTicks();
         long readBytes = 0L;
         long writeBytes = 0L;
+        long rchar = 0L;
+        long wchar = 0L;
 
         for (ProcFSUtils.ProcPidStat stat: processesStats) {
             rssPages += stat.rssPages;
@@ -99,6 +103,8 @@ public class ProcFSProfiler extends SamplingProfiler {
         for (ProcFSUtils.ProcPidIO io: ios) {
             readBytes += io.readBytes;
             writeBytes += io.writeBytes;
+            rchar += io.rchar;
+            wchar += io.wchar;
         }
 
         double userTicksDelta = userTicks - prevUserCpuTicks.getAndSet(userTicks);
@@ -108,8 +114,10 @@ public class ProcFSProfiler extends SamplingProfiler {
         double hostActiveTicksDelta = hostActiveTicks - prevHostActiveCpuTicks.getAndSet(hostActiveTicks);
         double deltaReadBytes = readBytes - prevReadBytes.getAndSet(readBytes);
         double deltaWriteBytes = writeBytes - prevWriteBytes.getAndSet(writeBytes);
-
-        double deltaLastSampleSec = deltaLastSampleMs / 1000D;
+        double deltaRChar = rchar - prevRChar.getAndSet(rchar);
+        double deltaWChar = wchar - prevWChar.getAndSet(wchar);
+        double delatRCharNoDisk = deltaRChar - deltaReadBytes;
+        double deltaWCharNoDisk = deltaWChar - deltaWriteBytes;
 
         double treeCpuTime = treeTicksDelta * OSUtils.getJiffyLengthInMillis();
         double userCpuLoad = userTicksDelta / hostTotalTicksDelta;
@@ -126,5 +134,7 @@ public class ProcFSProfiler extends SamplingProfiler {
         reporter.reportEvent("PROC_TREE_CPU_TIME", "", treeCpuTime, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_READ_BYTES", "", deltaReadBytes, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_WRITE_BYTES", "", deltaWriteBytes, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_RCHAR", "", deltaRChar, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_WCHAR", "", deltaWChar, sampleTimeMs);
     }
 }

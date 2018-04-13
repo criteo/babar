@@ -1,8 +1,8 @@
 export default {
     // colors   
-    DARK_BLUE: "#344754",
-    LIGHT_BLUE: "#74B3DF",
+    DARK_BLUE: "#153C63",
+    LIGHT_BLUE: "#86BBD8",
     GREY: "#DDDDDD",
-    DARK_RED: "#BD3A38",
-    ORANGE: "#D08167"
+    DARK_RED: "#C42B1D",
+    ORANGE: "#ED9F04"
 }

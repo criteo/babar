@@ -10,6 +10,7 @@
           <b-nav-item href="#" @click="tab='memory'">Memory</b-nav-item>
           <b-nav-item href="#" @click="tab='cpu'">CPU</b-nav-item>
           <b-nav-item href="#" @click="tab='gc'">GC</b-nav-item>
+          <b-nav-item href="#" @click="tab='io'">IO</b-nav-item>
           <b-nav-item href="#" @click="tab='traces'">Traces</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
@@ -21,6 +22,7 @@
       <Memory v-if="tab=='memory'" />
       <CPU v-if="tab=='cpu'" />
       <GC v-if="tab=='gc'" />
+      <IO v-if="tab=='io'" />
       <Traces v-if="tab == 'traces'"/>
 
     </b-container>
@@ -36,6 +38,7 @@ import Traces from './Traces.vue'
 import Memory from './Memory.vue'
 import CPU from './CPU.vue'
 import GC from './GC.vue'
+import IO from './IO.vue'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -45,7 +48,7 @@ Vue.use(BootstrapVue);
 export default {
   name: 'Babar-report',
   components: {
-    Overview, Traces, Memory, GC, CPU
+    Overview, Traces, Memory, GC, CPU, IO
   },
   data() {
     return {
