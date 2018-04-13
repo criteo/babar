@@ -28,7 +28,7 @@
             </template>
             <template slot="timeline" slot-scope="row">
               <div class="timeline" v-b-tooltip.hover :title="timelineTooltip(row.item.start, row.item.stop)" >
-                <span :style="timelineMargins(row.item.timeline.left, row.item.timeline.right)" >
+                <span :style="timelineStyle(row.item.timeline.left, row.item.timeline.right)" >
                 </span>
               </div>
             </template>
@@ -46,6 +46,7 @@ import BootstrapVue from "bootstrap-vue"
 import _ from "lodash"
 import StringUtils from "./stringUtils.js"
 import DateUtils from './dateUtils.js'
+import Constants from './constants.js'
 
 export default {
   data() {
@@ -61,8 +62,8 @@ export default {
     };
   },
   methods: {
-    timelineMargins(left, right) {
-      return "margin-left:" + left + "%;margin-right:" + right + "%;"
+    timelineStyle(left, right) {
+      return "margin-left:" + left + "%;margin-right:" + right + "%;background-color: " + Constants.LIGHT_BLUE
     },
     timelineTooltip(start, end) {
       return "started at " + start + "\nended at " + end
@@ -136,7 +137,6 @@ function minMax(containers) {
       height: 18px;
       margin-top: 0px;
       margin-bottom: 0px;
-      background-color: #74B3DF;
     }
   }
 }
