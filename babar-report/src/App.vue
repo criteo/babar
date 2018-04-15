@@ -18,7 +18,7 @@
 
    <b-container fluid id="content">
 
-      <Overview v-if="tab=='containers'"/>
+      <Containers v-if="tab=='containers'"/>
       <Memory v-if="tab=='memory'" />
       <CPU v-if="tab=='cpu'" />
       <GC v-if="tab=='gc'" />
@@ -33,7 +33,7 @@
 <script>
 import Vue from 'vue'
 import BootstrapVue from 'bootstrap-vue'
-import Overview from './Overview.vue'
+import Containers from './Containers.vue'
 import Traces from './Traces.vue'
 import Memory from './Memory.vue'
 import CPU from './CPU.vue'
@@ -48,7 +48,7 @@ Vue.use(BootstrapVue);
 export default {
   name: 'Babar-report',
   components: {
-    Overview, Traces, Memory, GC, CPU, IO
+    Containers, Traces, Memory, GC, CPU, IO
   },
   data() {
     return {
