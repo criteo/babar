@@ -3,7 +3,7 @@ package com.criteo.babar.processor
 import org.apache.commons.lang3.mutable.MutableLong
 
 import scala.collection.mutable
-import scala.util.parsing.json.{JSONArray, JSONObject, JSONType}
+import scala.util.parsing.json.{JSON, JSONArray, JSONObject, JSONType}
 
 
 trait Transformation2[-IN, +OUT] {
@@ -25,7 +25,7 @@ trait Transformation2[-IN, +OUT] {
 }
 
 case class FilterMetric(metric: String) extends Transformation2[Gauge, Gauge] {
-  override def transform(g: Gauge): Iterable[Gauge] = if (metric == g.metric) Some(g) else None
+  override def transform(g: Gauge): Iterable[Gauge] = if (g.metric.startsWith(metric)) Some(g) else None
 }
 
 case class Cap(min: Double, max: Double) extends Transformation2[Gauge, Gauge] {
@@ -72,6 +72,18 @@ trait Aggregation2[-IN, +OUT] {
       }
     }
   }
+}
+
+case class TrueIfAny() extends Aggregation2[Gauge, Boolean] {
+  private var isTrue = false
+
+  override def aggregate(value: Gauge): Unit = {
+    isTrue = true
+  }
+
+  override def values(): Iterable[Boolean] = Seq(isTrue).filter(_ == true)
+
+  override def json(): Option[JSONType] = if (isTrue) Some(JSONObject(Map("true" -> true))) else None
 }
 
 class AggregationByContainerAndTime[ACC, OUT](val zero: ACC)(val fn: (ACC, Double) => ACC)(val fin: ACC => OUT) extends Aggregation2[Gauge, ((String, Long), OUT)] {

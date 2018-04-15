@@ -1,47 +1,58 @@
 <template>
     <div>
-        <div>
-            <b-form v-on:submit.prevent>
-                <b-container fluid>
 
-                    <b-row>
-                        <b-col lg="6">
-                            <b-form-group id="whitelistGroup" label="Whitelisted method-prefixes (comma-spearated)" label-for="whitelist">
-                                <b-input-group>
-                                    <b-form-input id="whitelist" type="text" v-model="whitelist" placeholder="eg: org.apache.hadoop.mapred,org.apache.spark" @change="updateTree">
-                                    </b-form-input>
-                                </b-input-group>
-                            </b-form-group>
-                        </b-col>
-                        <b-col lg="6">
-                            <b-form-group id="blacklistGroup" label="Blacklisted method-prefixes (comma-spearated)" label-for="blacklist">
-                                <b-input-group>
-                                    <b-form-input id="blacklist" type="text" v-model="blacklist" placeholder="eg: org.apache.hadoop.net.unix,sun.nio.ch.EPoll" @change="updateTree">
-                                    </b-form-input>
-                                </b-input-group>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
+        <b-alert show variant="warning" v-if="!isStackTracesProfilerUsed">
+            No traces data has been found, make sure the <strong>StackTracesProfiler</strong> has been used
+            to profile your application.
+        </b-alert>
 
-                    <b-row>
-                        <b-col lg="12">
-                            <b-form-group id="traceSearchGroup" label="Search for method-prefixes (commas-spearated)" label-for="traceSearch">
-                                <b-input-group>
-                                    <b-form-input id="traceSearch" type="text" v-model="search" placeholder="eg: org.project.MyClass.myMethod" @change="updateTree">
-                                    </b-form-input>
-                                </b-input-group>
-                            </b-form-group>
+       <template v-if="isStackTracesProfilerUsed">
 
-                            <b-table striped hover :items="searchResult"></b-table>
-                        </b-col>
-                    </b-row>
+            <div>
+                <b-form v-on:submit.prevent>
+                    <b-container fluid>
 
-                </b-container>
+                        <b-row>
+                            <b-col lg="6">
+                                <b-form-group id="whitelistGroup" label="Whitelisted method-prefixes (comma-spearated)" label-for="whitelist">
+                                    <b-input-group>
+                                        <b-form-input id="whitelist" type="text" v-model="whitelist" placeholder="eg: org.apache.hadoop.mapred,org.apache.spark" @change="updateTree">
+                                        </b-form-input>
+                                    </b-input-group>
+                                </b-form-group>
+                            </b-col>
+                            <b-col lg="6">
+                                <b-form-group id="blacklistGroup" label="Blacklisted method-prefixes (comma-spearated)" label-for="blacklist">
+                                    <b-input-group>
+                                        <b-form-input id="blacklist" type="text" v-model="blacklist" placeholder="eg: org.apache.hadoop.net.unix,sun.nio.ch.EPoll" @change="updateTree">
+                                        </b-form-input>
+                                    </b-input-group>
+                                </b-form-group>
+                            </b-col>
+                        </b-row>
 
-            </b-form>
-        </div>
+                        <b-row>
+                            <b-col lg="12">
+                                <b-form-group id="traceSearchGroup" label="Search for method-prefixes (commas-spearated)" label-for="traceSearch">
+                                    <b-input-group>
+                                        <b-form-input id="traceSearch" type="text" v-model="search" placeholder="eg: org.project.MyClass.myMethod" @change="updateTree">
+                                        </b-form-input>
+                                    </b-input-group>
+                                </b-form-group>
 
-        <div id="traces" style="width: 100%; height: 100%"></div>
+                                <b-table striped hover :items="searchResult"></b-table>
+                            </b-col>
+                        </b-row>
+
+                    </b-container>
+
+                </b-form>
+            </div>
+
+            <div id="traces" style="width: 100%; height: 100%"></div>
+
+       </template>
+
     </div>
 </template>
 
@@ -65,6 +76,7 @@ export default {
     },
     data() {
         return {
+            isStackTracesProfilerUsed: window.data["isStackTracesProfiler"],
             whitelist: "",
             blacklist: "",
             search: "",

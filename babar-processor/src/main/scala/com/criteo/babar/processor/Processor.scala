@@ -195,7 +195,11 @@ object Processor {
       // ------------------------------ Traces ----------------------------------
       "traces" ->
         (FilterMetric("CPU_TRACES")
-          aggregate TracesAggregation2(conf.minTracesRatio(), conf.maxTracesDepth()))
+          aggregate TracesAggregation2(conf.minTracesRatio(), conf.maxTracesDepth())),
+      // profilers
+      "isJvmProfiler" -> (FilterMetric("JVM_") aggregate TrueIfAny()),
+      "isProcFSProfiler" -> (FilterMetric("PROC_") aggregate TrueIfAny()),
+      "isStackTracesProfiler" -> (FilterMetric("CPU_TRACES") aggregate TrueIfAny())
     )
 
     val containers = conf.containers().split(',').toSet

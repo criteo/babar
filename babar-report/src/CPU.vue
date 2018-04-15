@@ -16,39 +16,61 @@
     </b-container>
 
     <b-container fluid v-if="tab=='jvm'" key="jvm">
-      <PlotTimeSeries title="JVM CPU usage" yAxis="usage" yMax="1" :series="series.jvm" />
-      <div class="explanation">
-        This graph shows the median and max <strong>CPU usage as reported by the JVM instrumentation</strong> over all the containers.<br>
-        It only reports the JVM CPU usage and will ignore children processes spawned by the java application.<br>
-      </div>
-      <PlotTimeSeries title="Host CPU usage" yAxis="usage" yMax="1" :series="series.jvmHost" />
-      <div class="explanation">
-        This graph shows the median and max <strong>host CPU usage as reported by the JVM instrumentation</strong> over all the containers.<br>
-        The host CPU usage is the CPU usage of the machine on which the containers are running.<br>
-        This graph can be useful to understand why some containers take longer than others if they are scheduled on very busy hosts.
-      </div>
-      <PlotTimeSeries title="Accumulated JVM CPU seconds" yAxis="sec" :series="series.jvmAccumulated" />
-      <div class="explanation">
-        This graph show the total amount of CPU time used on all containers since the start of the application.
-      </div>
+
+      <b-alert show variant="warning" v-if="!isJvmProfilerUsed">
+        No data has been found for the JVM CPU usage, make sure the <strong>JVMProfiler</strong> has been used
+        to profile your application.
+      </b-alert>
+
+      <template v-if="isJvmProfilerUsed">
+
+        <PlotTimeSeries title="JVM CPU usage" yAxis="usage" yMax="1" :series="series.jvm" />
+        <div class="explanation">
+          This graph shows the median and max <strong>CPU usage as reported by the JVM instrumentation</strong> over all the containers.<br>
+          It only reports the JVM CPU usage and will ignore children processes spawned by the java application.<br>
+        </div>
+        <PlotTimeSeries title="Host CPU usage" yAxis="usage" yMax="1" :series="series.jvmHost" />
+        <div class="explanation">
+          This graph shows the median and max <strong>host CPU usage as reported by the JVM instrumentation</strong> over all the containers.<br>
+          The host CPU usage is the CPU usage of the machine on which the containers are running.<br>
+          This graph can be useful to understand why some containers take longer than others if they are scheduled on very busy hosts.
+        </div>
+        <PlotTimeSeries title="Accumulated JVM CPU seconds" yAxis="sec" :series="series.jvmAccumulated" />
+        <div class="explanation">
+          This graph show the total amount of CPU time used on all containers since the start of the application.
+        </div>
+
+      </template>
+
     </b-container>
 
     <b-container fluid v-if="tab=='procfs'" key="procfs">
-      <PlotTimeSeries title="User & Kernel process tree CPU load" yAxis="load" yMax="1" :series="series.procModes" />
-      <div class="explanation">
-        This graph shows the median and max <strong>CPU load as reported by the <kbd>/proc/[pid]/stat</kbd> file</strong> over all the containers.<br>
-        It shows the split of the load in <strong>user</strong> and <strong>kernel</strong> modes. 
-        Time spent in kernel mode include, for instance, part of some I/O operations such as disk access.<br>
-        It takes into account the total CPU load of all children processes spawned by the java application (e.g. python processes).<br>
-      </div>
-      <PlotTimeSeries title="Host CPU load" yAxis="load" yMax="1" :series="series.procHost" />
-      <div class="explanation">
-        This graph shows the median and max <strong>host CPU load as reported by the <kbd>/proc/stat</kbd> file</strong> over all the containers.
-      </div>
-      <PlotTimeSeries title="Accumulated process tree CPU seconds" yAxis="sec" :series="series.procAccumulated" />
-      <div class="explanation">
-        This graph shows the total amount of CPU time used on all containers since the start of the application as reported by the <kbd>/proc/stat</kbd> file.
-      </div>
+
+      <b-alert show variant="warning" v-if="!isProcFSProfilerUsed">
+        No data has been found for the CPU usage from the proc filesystem, make sure the <strong>ProcFSProfiler</strong> has been used
+        to profile your application.
+      </b-alert>
+
+      <template v-if="isProcFSProfilerUsed">
+
+        <PlotTimeSeries title="User & Kernel process tree CPU load" yAxis="load" yMax="1" :series="series.procModes" />
+        <div class="explanation">
+          This graph shows the median and max <strong>CPU load as reported by the <kbd>/proc/[pid]/stat</kbd> file</strong> over all the containers.<br>
+          It shows the split of the load in <strong>user</strong> and <strong>kernel</strong> modes. 
+          Time spent in kernel mode include, for instance, part of some I/O operations such as disk access.<br>
+          It takes into account the total CPU load of all children processes spawned by the java application (e.g. python processes).<br>
+        </div>
+        <PlotTimeSeries title="Host CPU load" yAxis="load" yMax="1" :series="series.procHost" />
+        <div class="explanation">
+          This graph shows the median and max <strong>host CPU load as reported by the <kbd>/proc/stat</kbd> file</strong> over all the containers.
+        </div>
+        <PlotTimeSeries title="Accumulated process tree CPU seconds" yAxis="sec" :series="series.procAccumulated" />
+        <div class="explanation">
+          This graph shows the total amount of CPU time used on all containers since the start of the application as reported by the <kbd>/proc/stat</kbd> file.
+        </div>
+
+      </template>
+
     </b-container>
 
   </div>
@@ -67,6 +89,8 @@ export default {
   data() {
     return {
       tab: "jvm",
+      isJvmProfilerUsed: window.data["isJvmProfiler"],
+      isProcFSProfilerUsed: window.data["isProcFSProfiler"],
       series: {
         jvm: _.filter([
           _.assign({}, window.data["max JVM CPU load"], { name: "max load", color: Constants.GREY }),
