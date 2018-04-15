@@ -10,7 +10,7 @@
           <b-nav-item href="#" @click="tab='memory'">Memory</b-nav-item>
           <b-nav-item href="#" @click="tab='cpu'">CPU</b-nav-item>
           <b-nav-item href="#" @click="tab='gc'">GC</b-nav-item>
-          <b-nav-item href="#" @click="tab='io'">IO</b-nav-item>
+          <b-nav-item href="#" @click="tab='io'">I/O</b-nav-item>
           <b-nav-item href="#" @click="tab='traces'">Traces</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
