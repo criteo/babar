@@ -45,7 +45,7 @@ export default {
             },
             legend: {
                 data: this.series.map(s => s.name),
-                top: '5%'
+                top: '6%'
             },
             grid: {
                 left: '100px',

@@ -3,7 +3,17 @@
 
     <b-container class="text-center" fluid>
       <PlotTimeSeries title="Minor & Major median GC ratio" yAxis="%time" yMax="1" :series="series.minorMajor" />
+      <div class="explanation">
+        This graph shows the median ratio of wall-clock time spent doing minor and major garbage collections in the JVMs on all containers.<br>
+        <strong>Minor GC</strong> only clean the young generation, while <strong>Major GC</strong> cleans both the young and old ones.<br>
+        Major GC should be much less frequent that minor GC, otherwise it could indicate that too many short lived-object are promototed to the old generation.
+        If this is the case, you may want to resize the generations and make sure that no humongous objects use most of the old generation.
+      </div>
       <PlotTimeSeries title="Accumulated JVM CPU time and GC CPU time" yAxis="sec" :series="series.accumulatedCpuGc" />
+      <div class="explanation">
+        This graph shows the accumulated CPU time spent doing garbage collection since the start of the application.<br>
+        This value is an estimation, computed by summing, for all time periods, the GC ratio (% time spent doing GC) multiplied by the JVM CPU time.
+      </div>
     </b-container>
 
   </div>

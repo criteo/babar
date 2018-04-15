@@ -2,7 +2,13 @@
   <div id="overview">
 
     <PlotTimeSeries title="Running containers"  yAxis="containers" :series="series.containers" />
-    <hr>
+
+    <div class="explanation">
+      The graph above shows the number of running containers at any given time for you application.<br>
+      Below you will find the list of all of the application containers, along with their duration and a visual represerntation of the time they have been running over
+      total application run-time.
+    </div>
+
     <ContainersTimeline />
 
   </div>
