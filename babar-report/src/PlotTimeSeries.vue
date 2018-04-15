@@ -67,7 +67,7 @@ export default {
                 color: s.color,
                 name: s.name,
                 type: 'line',
-                symbolSize: 4,
+                symbolSize: 0,
                 hoverAnimation: false,
                 stack: s.stack,
                 areaStyle: { normal: { opacity: (s.opacity !== undefined) ? s.opacity : 1 } },

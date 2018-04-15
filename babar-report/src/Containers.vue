@@ -1,7 +1,7 @@
 <template>
   <div id="overview">
 
-    <PlotTimeSeries title="Containers"  yAxis="containers" :series="series.containers" />
+    <PlotTimeSeries title="Running containers"  yAxis="containers" :series="series.containers" />
     <hr>
     <ContainersTimeline />
 
@@ -12,6 +12,7 @@
 import Vue from 'vue'
 import PlotTimeSeries from './PlotTimeSeries.vue'
 import ContainersTimeline from './ContainersTimeline.vue'
+import Constants from './constants.js'
 
 export default {
   name: 'Babar-report',
@@ -22,11 +23,7 @@ export default {
     return {
       series: {
         containers: [
-          {
-            name: "containers",
-            time: window.data["containers"].time,
-            values: window.data["containers"].values
-          }
+          _.assign({}, window.data["containers"], {name: "containers", color: Constants.DARK_RED})
         ]
       }
     }

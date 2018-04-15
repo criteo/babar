@@ -33,6 +33,7 @@
 import Vue from 'vue'
 import PlotTimeSeries from './PlotTimeSeries.vue'
 import _ from 'lodash'
+import Constants from './constants.js'
 
 export default {
   components: {
@@ -43,34 +44,34 @@ export default {
       tab: "total",
       series: {
         totalUsed: _.filter([
-          _.assign({}, window.data["total reserved"], { name: "total reserved" }),
-          _.assign({}, window.data["total RSS memory"], { name: "total RSS memory" }),
-          _.assign({}, window.data["total used heap"], { name: "total used heap", stack: true }),
-          _.assign({}, window.data["total used off-heap"], { name: "total used off-heap", stack: true })
+          _.assign({}, window.data["total reserved"], { name: "total reserved", color: Constants.DARK_RED }),
+          _.assign({}, window.data["total RSS memory"], { name: "total RSS memory", color: Constants.DARK_BLUE }),
+          _.assign({}, window.data["total used heap"], { name: "total used heap", color: Constants.LIGHT_BLUE, stack: true }),
+          _.assign({}, window.data["total used off-heap"], { name: "total used off-heap", color: Constants.ORANGE, stack: true })
         ], s => s.values),
         maxUsed: _.filter([
-          _.assign({}, window.data["max reserved"], { name: "total reserved" }),
-          _.assign({}, window.data["max RSS memory"], { name: "total RSS memory" }),
-          _.assign({}, window.data["max used heap"], { name: "total used heap", stack: true }),
-          _.assign({}, window.data["max used off-heap"], { name: "total used off-heap", stack: true })
+          _.assign({}, window.data["max reserved"], { name: "total reserved", color: Constants.DARK_RED }),
+          _.assign({}, window.data["max RSS memory"], { name: "total RSS memory", color: Constants.DARK_BLUE }),
+          _.assign({}, window.data["max used heap"], { name: "total used heap", color: Constants.LIGHT_BLUE, stack: true }),
+          _.assign({}, window.data["max used off-heap"], { name: "total used off-heap", color: Constants.ORANGE, stack: true })
         ], s => s.values),
         totalCommitted: _.filter([
-          _.assign({}, window.data["total reserved"], { name: "total reserved" }),
-          _.assign({}, window.data["total RSS memory"], { name: "total RSS memory" }),
-          _.assign({}, window.data["total committed heap"], { name: "total committed heap", stack: true }),
-          _.assign({}, window.data["total committed off-heap"], { name: "total committed off-heap", stack: true })
+          _.assign({}, window.data["total reserved"], { name: "total reserved", color: Constants.DARK_RED }),
+          _.assign({}, window.data["total RSS memory"], { name: "total RSS memory", color: Constants.DARK_BLUE }),
+          _.assign({}, window.data["total committed heap"], { name: "total committed heap", color: Constants.LIGHT_BLUE, stack: true }),
+          _.assign({}, window.data["total committed off-heap"], { name: "total committed off-heap", color: Constants.ORANGE, stack: true })
         ], s => s.values),
         maxCommitted: _.filter([
-          _.assign({}, window.data["max reserved"], { name: "total reserved" }),
-          _.assign({}, window.data["max RSS memory"], { name: "total RSS memory" }),
-          _.assign({}, window.data["max committed heap"], { name: "total committed heap", stack: true }),
-          _.assign({}, window.data["max committed off-heap"], { name: "total committed off-heap", stack: true })
+          _.assign({}, window.data["max reserved"], { name: "total reserved", color: Constants.DARK_RED }),
+          _.assign({}, window.data["max RSS memory"], { name: "total RSS memory", color: Constants.DARK_BLUE }),
+          _.assign({}, window.data["max committed heap"], { name: "total committed heap", color: Constants.LIGHT_BLUE, stack: true }),
+          _.assign({}, window.data["max committed off-heap"], { name: "total committed off-heap", color: Constants.ORANGE, stack: true })
         ], s => s.values),
         accumulated: _.filter([
-          _.assign({}, window.data["accumulated reserved"], { name: "accumulated reserved" }),
-          _.assign({}, window.data["accumulated RSS memory"], { name: "accumulated RSS memory" }),
-          _.assign({}, window.data["accumulated used heap"], { name: "accumulated used heap", stack: true }),
-          _.assign({}, window.data["accumulated used off-heap"], { name: "accumulated used off-heap", stack: true })
+          _.assign({}, window.data["accumulated reserved"], { name: "accumulated reserved", color: Constants.DARK_RED }),
+          _.assign({}, window.data["accumulated RSS memory"], { name: "accumulated RSS memory", color: Constants.DARK_BLUE }),
+          _.assign({}, window.data["accumulated used heap"], { name: "accumulated used heap", color: Constants.LIGHT_BLUE, stack: true }),
+          _.assign({}, window.data["accumulated used off-heap"], { name: "accumulated used off-heap", color: Constants.ORANGE, stack: true })
         ], s => s.values)
       }
     }

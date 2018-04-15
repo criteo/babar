@@ -21,7 +21,7 @@
             :fields="fields">
             
             <template slot="container" slot-scope="data">
-              <b-badge variant="secondary">{{data.value}}</b-badge>
+              <b-badge variant="light">{{data.value}}</b-badge>
             </template>
             <template slot="duration" slot-scope="data">
               {{data.value | formatDuration}}
@@ -125,6 +125,11 @@ function minMax(containers) {
 
   td[aria-colindex="3"]  {
     width: 90%;
+  }
+
+  .badge {
+    background-color: #eeeeee;
+    font-weight: 500;
   }
 
   .timeline {
