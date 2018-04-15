@@ -38,7 +38,7 @@ object Processor {
     val MBSec = timePrecSec * MB
 
     // Aggregations to perform on the input stream
-    val aggregations = Map[String, Aggregation2[Gauge, _]](
+    val aggregations = Map[String, Aggregation[Gauge, _]](
       // ----------------------------- General ----------------------------------
       "containers" ->
         (DiscretizeTime(timePrecMs) aggregate OneByContainerAndTime() and SumOverAllContainersByTime()),
@@ -195,7 +195,7 @@ object Processor {
       // ------------------------------ Traces ----------------------------------
       "traces" ->
         (FilterMetric("CPU_TRACES")
-          aggregate TracesAggregation2(conf.minTracesRatio(), conf.maxTracesDepth())),
+          aggregate TracesAggregation(conf.minTracesRatio(), conf.maxTracesDepth())),
       // profilers
       "isJvmProfiler" -> (FilterMetric("JVM_") aggregate TrueIfAny()),
       "isProcFSProfiler" -> (FilterMetric("PROC_") aggregate TrueIfAny()),
@@ -233,7 +233,7 @@ object Processor {
     containers.isEmpty || containers.exists(c => gauge.container.startsWith(c))
   }
 
-  def buildJSON(aggregations: Map[String, Aggregation2[_, _]]): JSONObject = {
+  def buildJSON(aggregations: Map[String, Aggregation[_, _]]): JSONObject = {
     val jsons = aggregations.flatMap{ case (key, agg) => agg.json().map((key, _))}
     JSONObject(jsons)
   }

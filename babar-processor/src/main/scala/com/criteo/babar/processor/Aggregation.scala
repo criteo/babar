@@ -6,17 +6,17 @@ import scala.collection.mutable
 import scala.util.parsing.json.{JSON, JSONArray, JSONObject, JSONType}
 
 
-trait Transformation2[-IN, +OUT] {
+trait Transformation[-IN, +OUT] {
 
   def transform(value: IN): Iterable[OUT]
 
-  def and[NOUT](next: Transformation2[OUT, NOUT]): Transformation2[IN, NOUT] = {
+  def and[NOUT](next: Transformation[OUT, NOUT]): Transformation[IN, NOUT] = {
     (value: IN) => this.transform(value).flatMap(next.transform)
   }
 
-  def aggregate[NOUT](aggregation: Aggregation2[OUT, NOUT]): Aggregation2[IN, NOUT] = {
+  def aggregate[NOUT](aggregation: Aggregation[OUT, NOUT]): Aggregation[IN, NOUT] = {
     val prev = this
-    new Aggregation2[IN, NOUT] {
+    new Aggregation[IN, NOUT] {
       override def aggregate(value: IN): Unit = transform(value).foreach(aggregation.aggregate)
       override def values(): Iterable[NOUT] = aggregation.values()
       override def json(): Option[JSONType] = aggregation.json()
@@ -24,30 +24,30 @@ trait Transformation2[-IN, +OUT] {
   }
 }
 
-case class FilterMetric(metric: String) extends Transformation2[Gauge, Gauge] {
+case class FilterMetric(metric: String) extends Transformation[Gauge, Gauge] {
   override def transform(g: Gauge): Iterable[Gauge] = if (g.metric.startsWith(metric)) Some(g) else None
 }
 
-case class Cap(min: Double, max: Double) extends Transformation2[Gauge, Gauge] {
+case class Cap(min: Double, max: Double) extends Transformation[Gauge, Gauge] {
   override def transform(g: Gauge): Iterable[Gauge] = {
     Some(g.copy(value = math.max(0, math.min(1, g.value))))
   }
 }
 
-case class Scale(scale: Double) extends Transformation2[Gauge, Gauge] {
+case class Scale(scale: Double) extends Transformation[Gauge, Gauge] {
   override def transform(g: Gauge): Iterable[Gauge] = {
     Some(g.copy(value = g.value * scale))
   }
 }
 
-case class DiscretizeTime(precision: Long) extends Transformation2[Gauge, Gauge] {
+case class DiscretizeTime(precision: Long) extends Transformation[Gauge, Gauge] {
   override def transform(g: Gauge): Iterable[Gauge] = {
     Some(g.copy(timestamp = g.timestamp - (g.timestamp % precision)))
   }
 }
 
 
-trait Aggregation2[-IN, +OUT] {
+trait Aggregation[-IN, +OUT] {
 
   def aggregate(value: IN): Unit
 
@@ -55,10 +55,10 @@ trait Aggregation2[-IN, +OUT] {
 
   def json(): Option[JSONType]
 
-  def and[NOUT](next: Aggregation2[OUT, NOUT]): Aggregation2[IN, NOUT] = {
+  def and[NOUT](next: Aggregation[OUT, NOUT]): Aggregation[IN, NOUT] = {
     val prev = this
 
-    new Aggregation2[IN, NOUT] {
+    new Aggregation[IN, NOUT] {
       override def aggregate(value: IN): Unit = {
         prev.aggregate(value)
       }
@@ -74,7 +74,7 @@ trait Aggregation2[-IN, +OUT] {
   }
 }
 
-case class TrueIfAny() extends Aggregation2[Gauge, Boolean] {
+case class TrueIfAny() extends Aggregation[Gauge, Boolean] {
   private var isTrue = false
 
   override def aggregate(value: Gauge): Unit = {
@@ -86,7 +86,7 @@ case class TrueIfAny() extends Aggregation2[Gauge, Boolean] {
   override def json(): Option[JSONType] = if (isTrue) Some(JSONObject(Map("true" -> true))) else None
 }
 
-class AggregationByContainerAndTime[ACC, OUT](val zero: ACC)(val fn: (ACC, Double) => ACC)(val fin: ACC => OUT) extends Aggregation2[Gauge, ((String, Long), OUT)] {
+class AggregationByContainerAndTime[ACC, OUT](val zero: ACC)(val fn: (ACC, Double) => ACC)(val fin: ACC => OUT) extends Aggregation[Gauge, ((String, Long), OUT)] {
 
   private val map = mutable.Map[(String, Long), ACC]()
 
@@ -125,7 +125,7 @@ case class AvgByContainerAndTime() extends AggregationByContainerAndTime((0D, 0L
 
 case class SumByContainerAndTime() extends AggregationByContainerAndTime(0D)((sum, v) => sum + v)(identity)
 
-class AggregationOverAllContainersByTime[V, ACC, OUT](zero: ACC)(val acc: (ACC, V) => ACC)(val fin: ACC => OUT)  extends Aggregation2[((String, Long), V), (Long, OUT)] {
+class AggregationOverAllContainersByTime[V, ACC, OUT](zero: ACC)(val acc: (ACC, V) => ACC)(val fin: ACC => OUT)  extends Aggregation[((String, Long), V), (Long, OUT)] {
 
   private val map = mutable.SortedMap[Long, ACC]()
 
@@ -176,7 +176,7 @@ case class AccumulateOverAllContainersByTime() extends AggregationOverAllContain
   }
 }
 
-case class StartStopContainerTime() extends Aggregation2[Gauge, (String, (Long, Long))] {
+case class StartStopContainerTime() extends Aggregation[Gauge, (String, (Long, Long))] {
 
   private val map = mutable.Map[String, (Long, Long)]()
 
@@ -203,8 +203,8 @@ case class StartStopContainerTime() extends Aggregation2[Gauge, (String, (Long, 
   }
 }
 
-case class TracesAggregation2(minSampleRatio: Double,
-                              maxDepth: Int) extends Aggregation2[Gauge, TraceNode] {
+case class TracesAggregation(minSampleRatio: Double,
+                             maxDepth: Int) extends Aggregation[Gauge, TraceNode] {
 
   private val root = new TraceNode("root")
 
