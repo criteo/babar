@@ -116,8 +116,6 @@ public class ProcFSProfiler extends SamplingProfiler {
         double deltaWriteBytes = writeBytes - prevWriteBytes.getAndSet(writeBytes);
         double deltaRChar = rchar - prevRChar.getAndSet(rchar);
         double deltaWChar = wchar - prevWChar.getAndSet(wchar);
-        double delatRCharNoDisk = deltaRChar - deltaReadBytes;
-        double deltaWCharNoDisk = deltaWChar - deltaWriteBytes;
 
         double treeCpuTime = treeTicksDelta * OSUtils.getJiffyLengthInMillis();
         double userCpuLoad = userTicksDelta / hostTotalTicksDelta;
