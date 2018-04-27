@@ -4,6 +4,7 @@ import com.criteo.babar.agent.config.AgentConfig;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 public abstract class Reporter {
 
@@ -34,10 +35,10 @@ public abstract class Reporter {
 
     private static String getRandomString(int length) {
         char[] randomChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(length);
+        Random rand = new Random();
         for (int i = 0; i < length; i++) {
-            int j = (int)Math.round(Math.random() * randomChars.length);
-            sb.append(randomChars[j]);
+            sb.append(randomChars[rand.nextInt(randomChars.length-1)]);
         }
         return sb.toString();
     }
