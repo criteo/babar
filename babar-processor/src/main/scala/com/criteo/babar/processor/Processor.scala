@@ -8,7 +8,7 @@ import org.rogach.scallop.ScallopConf
 import scala.util.parsing.json.JSONObject
 
 class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
-  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
 
   val timePrecision = opt[Long](short = 't', descr = "time precision (in ms) to use in aggregations", default = Some(10000L))
   val outputFile = opt[String](short = 'o', descr = "path of the output file (default: ./babar_{date}.html)", default = Some(s"babar_${formatter.format(LocalDateTime.now())}.html"))
