@@ -1,105 +1,170 @@
-Table of Contents
-=================
+# Babar: a profiler for large-scale distributed applications
 
-   * [Table of Contents](#table-of-contents)
-   * [BABAR: a profiler for large-scale distributed applications](#babar-a-profiler-for-large-scale-distributed-applications)
-      * [How to use](#how-to-use)
-         * [Babar-agent](#babar-agent)
-            * [instrumenting the JVM with the agent](#instrumenting-the-jvm-with-the-agent)
-            * [Available profilers](#available-profilers)
-         * [Babar-processor](#babar-processor)
-            * [Usage](#usage)
-      * [Profiling a Spark application](#profiling-a-spark-application)
-      * [Profiling a Scalding or MapReduce application](#profiling-a-scalding-or-mapreduce-application)
-         * [If the jar is already available on the nodes](#if-the-jar-is-already-available-on-the-nodes)
-         * [Distribute the jar programmatically](#distribute-the-jar-programmatically)
-      * [Profiling a Hive application](#profiling-a-hive-application)
-      * [Screenshots](#screenshots)
-      * [License](#license)
+Babar is a profiler for distributed applications developed to **profile large-scale distributed applications such as Spark, Scalding, MapReduce or Hive programs**.
 
-# BABAR: a profiler for large-scale distributed applications
-
-Babar is a profiler for java applications developed to **profile large-scale distributed applications such as Spark, Scalding, MapReduce or Hive programs**.
-
-Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual JVM and then aggregate them over the entire application to produce ready-to-use graphs of the resource usage and method calls (as flame-graphs) of the program as shown in the screenshots section below.
+Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual container and then aggregates them over the entire application to produce a ready-to-use report of the resource usage and method calls (as flame-graphs) of the program..
 
 Currently babar is designed to **profile YARN applications**, but could be extended in order to profile other types of applications.
 
-## How to use
+## Table of contents
 
-Babar is composed of two main components:
-1. **babar-agent**
-2. **babar-processor**
+   * [Build](#build)
+   * [Usage](#usage)
+      * [Babar-agent](#babar-agent)
+         * [JVMProfiler](#jvmprofiler)
+         * [ProcFSProfiler](#procfsprofiler)
+         * [StackTraceProfiler](#stacktraceprofiler)
+      * [Babar-processor](#babar-processor)
+         * [Usage](#usage)
+   * [Profiling a Spark application](#profiling-a-spark-application)
+   * [Profiling a Scalding or MapReduce application](#profiling-a-scalding-or-mapreduce-application)
+   * [Profiling a Hive application](#profiling-a-hive-application)
+   * [Screenshots](#screenshots)
+   * [License](#license)
 
-The **babar agent** is a `java-agent` program. An agent is a jar that can be attached to a JVM in order to intrument this JVM. The agent fecthes, at regular interval, information on the resource comsumption and logs the resulting metrics in a plain text file named `babar.log` inside the YARN log directory. YARN's log aggregation at the end of the application them combine all the executors logs into a single log file on HDFS.
+## Build
 
-The **babar-processor** is the piece of software responsible for parsing the aggregated log file from the YARN application and aggregating the metrics found in them to produce the graphs. the logs are parsed as streams which allows the **babar-processor** to aggregate large logs files (dozens of GB) without needing to load them in memory entirely at once.
+The following tools are required to build the project:
 
-Once the **babar-processor** has run, a new directory is created containing two HTML files containing the graphs (memory, CPU usage, GC usage, executor counts, flame-graphs,...).
+- **maven**
+- **npm**
+
+In order to build the project, run the following command at the root of the project:
+
+```
+mvn clean install`
+```
+
+## Usage
+
+Babar is composed of three main components:
+
+- `babar-agent`
+
+    The **babar-agent** is a `java-agent` program. An agent is a jar that can be attached to a JVM in order to intrument this JVM. The agent fecthes, at regular interval, information on the resource comsumption and logs the resulting metrics in a plain text file named `babar.log` inside the YARN log directory. YARN's log aggregation at the end of the application combines all the executors logs into a single log file available on HDFS.
+
+- `babar-processor`
+
+    The **babar-processor** is the piece of software responsible for parsing the aggregated log file from the YARN application and aggregating the metrics found to produce the report. the logs are parsed as streams which allows to aggregate large logs files (dozens of GB).
+
+    Once the **babar-processor** has run, a report HTML file is generated, containing all the graphs (memory, CPU usage, GC usage, executor counts, flame-graphs,...). This record can easily be shared by the teams and saved for later use.
+
+- `babar-report`
+
+    The **babar-report** is a [VueJS](https://vuejs.org/) project used as the template for the HTML file generated by the processor.
 
 ### Babar-agent
 
-the **babar-agent** instuments the JVM to register and log the resource usage metrics. It is a standard `java-agent` component (see the [instrumentation API doc](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) for more information).
+The **babar-agent** instuments the JVM to register and logs the resource usage metrics. It is a standard `java-agent` component (see the [instrumentation API doc](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) for more information).
 
-#### instrumenting the JVM with the agent
-
-In order to add the agent to a JVM, add the following arguments to the java command line used to start you application:
+In order to add the agent to a JVM, add the following arguments to the java command line used to start your application:
 
 ```
- -javaagent:/path/to/babar-agent.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=1024],CPUTimeProfiler[profilingMs=5000]
+ -javaagent:/path/to/babar-agent.jar=StackTraceProfiler,JVMProfiler[reservedMB=1024],ProcFSProfiler
 ```
 
 You will need to replace `/path/to/babar-agent.jar` with the actual path of the agent jar on your system. This jar must be locally accessible to your JVM (i.e. distributed on all your YARN nodes).
 
-the profilers can be added and configured using this command line. The profilers and their configuration are described bellow.
+The profilers can be set and configured using this command line by adding parameters within brackets as shown in the following example:
 
-#### Available profilers
+```
+-javaagent:./babar-agent.jar=StackTraceProfiler[profilingMs=1000,reportingMs=600000],JVMProfiler[profilingMs=1000,reservedMB=2560],ProcFSProfiler[profilingMs=1000]
+```
 
-3 profilers are available:
+The available profilers and their configuration are described bellow. They can be used together or independently of each other.
 
-- `CPUTimeProfiler`: this profiler registers and logs CPU usage and GC activity metrics at a regular interval. This interval can be configured using the `profilingMs` option in its arguments (e.g. `CPUTimeProfiler[profilingMs=5000]` will add the profiler and make it register metrics every 5 seconds)
+#### JVMProfiler
 
-- `MemoryProfiler`: this profiler registers metrics about memory (heap and off-heap used and committed memory) as well as reserved memory for the containers. The frequency of the profiling can be adjusted with `profilingMs`, and the amount of reserved memory for the executor can be indicated with `reservedMB`
+The `JVMProfiler` registers metrics related to the resource usage of the JVM such as memory (heap and off-heap), host and JVM CPU usage, and minor and major GC ratio. Because it uses the JVM instrumentation (see the [MXBean](https://docs.oracle.com/javase/tutorial/jmx/mbeans/mxbeans.html) documentation), it will only work inside the **hotspot JVM** (the most commonly used) and will not register metrics for processes ran outside the JVM even if started by it.
 
-- `StackTraceProfiler`: This profilers registers the stach traces of all `RUNNABLE` threads at regular intervals (the `profilingMs` options) and logs them at another interval (the `reportingMs` option) in order to aggregate multiple traces before logging them to save space in the logs. The traces are always logged at the JVM shutdown so one can set the repoting interval very high in order to save the most space in the logs if they are not interested in having traces logged in case the JVM is killed or fails.
+This profiler accepts the following parameters:
+
+<table>
+      <tr>
+            <td><strong>reservedMB</strong> (optional)</td>
+            <td>The amount of memeory reserved in megabytes for the container in which the JVM runs. This value allows Babar to plot the reserved memory despite not having access to it (as it is managed by the resource allocator, i.e. YARN).</td>
+      </tr>
+      <tr>
+            <td><strong>profilingMs</strong> (optional)</td>
+            <td>The interval in milliseconds between each sample (default 1000ms).</td>
+      </tr>
+</table>
+
+#### ProcFSProfiler
+
+The `ProcFSProfiler` logs OS-level metrics that are retrieved using the `proc` file system. This profiler is able to get metrics for the entire process tree, including processes started by the JVM but ran outside of it.
+
+Because the `proc` filesystem is only available on unix-like systems and its implementation is platform dependent and, **this profiler will only run on linux systems**. You may find more information on the `proc` filesystem in the [official man page](http://man7.org/linux/man-pages/man5/proc.5.html).
+
+This profiler accepts the following parameters:
+
+<table>
+      <tr>
+            <td><strong>profilingMs</strong> (optional)</td>
+            <td>The interval in milliseconds between each sample (default 1000ms).</td>
+      </tr>
+</table>
+
+#### StackTraceProfiler
+
+The `StackTraceProfiler` profiler registers the stack traces of all `RUNNABLE` JVM threads at regular intervals in order to build [flame graphs](http://www.brendangregg.com/flamegraphs.html) of the time spent by all your JVMs in method calls.
+
+The graphs are built by sampling the stack traces of the JVM at a regular interval (the `profilingMs` options). The traces are logged at another interval (the `reportingMs` option) in order to aggregate multiple traces before logging them to save space in the logs, which could otherwise takes hundreds of gigabytes. The traces are always logged on the JVM shutdown, so one can set the repoting interval at a very high value in order to save the most space in the logs if they are not interested in having traces logged in case the JVM is abruptly killed (they will still be logged if an exception is raised by the application code but the JVM is allowed to go through the shutdown hooks).
+
+This profiler accepts the following parameters:
+
+<table>
+      <tr>
+            <td><strong>profilingMs</strong> (optional)</td>
+            <td>The interval in milliseconds between each sample (default 100ms).</td>
+      </tr>
+      <tr>
+            <td><strong>reportingMs</strong> (optional)</td>
+            <td>The interval in milliseconds before logging the aggregated traces (default 10min).</td>
+      </tr>
+</table>
 
 ### Babar-processor
 
 The **babar-processor** is the piece of software that parses the logs and aggregates the metrics into graphs.
 
+The processor aggregates stack traces as flame graphs [flame graphs](http://www.brendangregg.com/flamegraphs.html). Other metrics are aggregated using a given time-precision, which means they are aggregated in time-buckets to aggregate metrics of different container in buckets as all containers will log metrics at a different time. This also allows to significantly reduce the size of the resulting HTML file so that it can easily be shared and exploited. This time-precision is user-adjustable but should always be at least twice the profiling interval set in the profilers.
+
 #### Usage
 
-The processor needs to parse the application log aggregated by YARN, either from HDFS or from a local log file that has been fecthed using the following command (replace the application id with yours):
+1. aggregating the logs
 
-```
-yarn logs --applicationId application_1514203639546_124445
-```
+      The processor needs to parse the application log aggregated by YARN (or any other log aggregation mechanism), either from HDFS or from a local log file that has been fecthed using the following command (replace the application id with yours):
 
-To run the **babar-processor**, the following command can be used:
+      ```
+      yarn logs --applicationId application_1514203639546_124445 > myAppLog.log
+      ```
 
-```
-java -jar /path/to/babar-processorT.jar -l myAppLog.log
-```
+2. parsing the logs to generate the HTML report
 
-The processor accepts the following arguments:
+      To run the **babar-processor**, the following command can be used:
 
-```
-  -l, --log-file  <arg>           the log file to open (REQUIRED)
-  -c, --containers  <arg>         if set, only metrics of containers matching
-                                  these prefixes are aggregated
-                                  (comma-separated)
-  -o, --output-dir  <arg>         path of the output dir (default: ./output)
-  -t, --time-precision  <arg>     time precision (in ms) to use in aggregations
-                                  (default: 10000)
-  -m, --traces-min-ratio  <arg>   min ratio of trace samples 
-                                  to show trace in graph
-                                  (default: 0.001)
-  -p, --traces-prefixes  <arg>    if set, traces will be aggregated only from
-                                  methods matching the prefixes
-                                  (comma-separated, eg: org.mygroup)
-```
+      ```
+      java -jar /path/to/babar-processor.jar myAppLog.log
+      ```
 
-In the output dir (by default `./output`), two HTML files containing the graph will be generated: `memory-cpu.html` and `traces.html`.
+      The processor accepts the following arguments:
+
+      ```
+      -c, --containers  <arg>         if set, only metrics of containers matching these prefixes are aggregated
+                                      (comma-separated)
+      -d, --max-traces-depth  <arg>   max depth of stack traces
+      -r, --min-traces-ratio  <arg>   min ratio of appearance in profiles for traces to be kept
+      -o, --output-file  <arg>        path of the output file (default: ./babar_{date}.html)
+      -t, --time-precision  <arg>     time precision (in ms) to use in aggregations
+      --help                          Show help message
+
+      trailing arguments:
+      log-file (required)   the log file to open
+      ```
+
+      Upon completion, the report HTML file is generated with a name such as `babar_2018-04-29_12-04-12.html`.
+      This file contains all the aggregated measurements
 
 ## Profiling a Spark application
 
@@ -108,40 +173,39 @@ No code changes are required to instrument a Spark job since Spark allows to dis
 In order to instrument your Spark application, simply add these arguments to your `spark-submit` command:
 
 ```
---files ./babar-agent-1.0-SNAPSHOT.jar 
---conf spark.executor.extraJavaOptions="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=7175],CPUTimeProfiler[profilingMs=5000]"
-``` 
+--files ./babar-agent.jar
+--conf spark.executor.extraJavaOptions="-javaagent:./babar-agent.jar=StackTraceProfiler,JVMProfiler[reservedMB=2560],ProcFSProfiler"
+```
 
-You can adjust the reserved memory setting according to the `spark.executor.memory + spark.yarn.executor.memoryOverhead`.
+You can adjust the reserved memory setting (`reservedMB`) according to `spark.executor.memory + spark.yarn.executor.memoryOverhead`.
 
 You can then use the `yarn logs` command to get the aggregated log file and process the logs using the **babar-processor**.
 
 ## Profiling a Scalding or MapReduce application
 
-### If the jar is already available on the nodes
+No code modification is required to instrument a MapReduce, Cascading or Scalding application as MapReduce allows distributing jars to the containers from `HDFS` using the `-files` argument.
 
-If the jar is already distributed on your nodes at `/path/to/babar-agent-1.0-SNAPSHOT.jar`, then you only need to add some command line arguments to your Scalding application command as below:
+In order to instrument your MapReduce job, use the following arguments:
 
 ```
--Dmapreduce.map.java.opts="-javaagent:/path/to/babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=2500],CPUTimeProfiler[profilingMs=5000]"
--Dmapreduce.reduce.java.opts="-javaagent:/path/to/babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=3500],CPUTimeProfiler[profilingMs=5000]"
+-files hdfs:///path/to/babar-agent.jar \
+-Dmapreduce.map.java.opts="-javaagent:./babar-agent.jar=StackTraceProfiler,JVMProfiler[reservedMB=2560],ProcFSProfiler" \
+-Dmapreduce.reduce.java.opts="-javaagent:./babar-agent.jar=StackTraceProfiler,JVMProfiler[reservedMB=3584],ProcFSProfiler"
 ```
 
-You can adjuste the reserved memory value for mappers and reducers independently. This value can also be programmatically determined. You will find an example on how to instrument a job to determine these values and set the configuration programmatically in the `babar-scalding` module.
-
-### Distribute the jar programmatically
-
-You will find an example on how to distribute an agent jar to all the containers whemn starting the application and instrument a job in the `babar-scalding` module.
+You can adjust the reserved memory values for mappers and reducers independently. These values can also be automatically set by instrumenting the jobs programmatically
 
 ## Profiling a Hive application
 
-Similarly to Spark, hive allows to easily distribute the jar to the executors. To profile a Hive application, simply execute the following commands:
+Similarly to Spark and MapReduce, Hive allows to easily distribute a jar from `HDFS` to the executors. To profile an Hive application, simply execute the following commands in Hive before your query:
 
 ```
-ADD FILE /home/b.hanotte/babar-agent-1.0-SNAPSHOT.jar;
-SET mapreduce.map.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=2560],CPUTimeProfiler[profilingMs=5000]";
-SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=100,reportingMs=60000],MemoryProfiler[profilingMs=5000,reservedMB=3684],CPUTimeProfiler[profilingMs=5000]";
+ADD FILE /path/to/babar-agent.jar;
+SET mapreduce.map.java.opts="-javaagent:./babar-agent.jar=StackTraceProfiler,MemoryProfiler[reservedMB=2560],CPUTimeProfiler";
+SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler,MemoryProfiler[reservedMB=3684],CPUTimeProfiler";
 ```
+
+As for other MapReduce applications, reserved memory values will need to be adjusted for mappers and reducers independently.
 
 ## Screenshots
 
