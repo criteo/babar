@@ -208,7 +208,7 @@ object Processor {
     HDFSUtils
       .readAsStreamWithProgressBar(conf.logFile())
       .flatMap(parseLine)
-      .filter(filterContainer(containers))
+      .flatMap(filterContainer(containers)) // use flatMap as filter materializes the entire stream in-memory
       .foreach{ gauge =>
         aggregations.values.foreach(_.aggregate(gauge))
       }
@@ -229,8 +229,13 @@ object Processor {
     }
   }
 
-  def filterContainer(containers: Set[String])(gauge: Gauge): Boolean = {
-    containers.isEmpty || containers.exists(c => gauge.container.startsWith(c))
+  def filterContainer(containers: Set[String])(gauge: Gauge): Option[Gauge] = {
+    if (containers.isEmpty || containers.exists(c => gauge.container.startsWith(c))) {
+      Some(gauge)
+    }
+    else {
+      None
+    }
   }
 
   def buildJSON(aggregations: Map[String, Aggregation[_, _]]): JSONObject = {
