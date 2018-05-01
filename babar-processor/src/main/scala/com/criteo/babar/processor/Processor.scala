@@ -204,7 +204,7 @@ object Processor {
 
     val containers = conf.containers().split(',').toSet
 
-    println("start aggregating...")
+    println("Start aggregating...")
     HDFSUtils
       .readAsStreamWithProgressBar(conf.logFile())
       .flatMap(parseLine)
@@ -212,12 +212,12 @@ object Processor {
       .foreach{ gauge =>
         aggregations.values.foreach(_.aggregate(gauge))
       }
-    println("\ndone aggregating")
+    println("\nDone aggregating")
 
-    println("Building json")
+    println("Building report")
     val json = buildJSON(aggregations)
     IOUtils.copyFromResources(REPORT_TEMPLATE_FILE, conf.outputFile(), json.toString())
-    println("done writing json")
+    println("Done writing report")
   }
 
   protected def parseLine(line: String): Option[Gauge] = {
