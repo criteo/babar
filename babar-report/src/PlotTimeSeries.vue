@@ -32,6 +32,8 @@ export default {
         }
     },
     mounted() {
+        // resize plot according to window height, cap at 400px
+        $("#"+this.plotId).height(Math.min($(window).height()*0.34, 400))
         this.myChart = echarts.init(document.getElementById(this.plotId));
         var z = 2   // z value for series
         // draw chart
@@ -45,7 +47,7 @@ export default {
             },
             legend: {
                 data: this.series.map(s => s.name),
-                top: '6%'
+                top: '7%'
             },
             grid: {
                 left: '100px',
@@ -83,7 +85,4 @@ export default {
 </script>
 
 <style lang="scss">
-.plot-time-series {
-    height: 400px;
-}
 </style>
