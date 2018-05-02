@@ -217,7 +217,7 @@ object Processor {
     println("Building report")
     val json = buildJSON(aggregations)
     IOUtils.copyFromResources(REPORT_TEMPLATE_FILE, conf.outputFile(), json.toString())
-    println("Done writing report")
+    println(s"Done writing report to ${conf.outputFile()}")
   }
 
   protected def parseLine(line: String): Option[Gauge] = {
