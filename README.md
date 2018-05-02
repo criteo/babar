@@ -2,6 +2,10 @@
 
 Babar is a profiler for distributed applications developed to **profile large-scale distributed applications such as Spark, Scalding, MapReduce or Hive programs**.
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/BenoitHanotte/babar/develop/babar-doc/babar.gif" alt="babar" style="max-width:100%;">
+</p>
+
 Babar registers metrics about **memory, cpu, garbage collection usage, as well as method calls** in each individual container and then aggregates them over the entire application to produce a ready-to-use report of the resource usage and method calls (as flame-graphs) of the program..
 
 Currently babar is designed to **profile YARN applications**, but could be extended in order to profile other types of applications.
@@ -19,7 +23,6 @@ Currently babar is designed to **profile YARN applications**, but could be exten
    * [Profiling a Spark application](#profiling-a-spark-application)
    * [Profiling a Scalding or MapReduce application](#profiling-a-scalding-or-mapreduce-application)
    * [Profiling a Hive application](#profiling-a-hive-application)
-   * [Screenshots](#screenshots)
    * [License](#license)
 
 ## Build
@@ -206,11 +209,6 @@ SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackT
 ```
 
 As for other MapReduce applications, reserved memory values will need to be adjusted for mappers and reducers independently.
-
-## Screenshots
-
-![memory-cpu](/babar-doc/memory-cpu.png)
-![traces](/babar-doc/traces.png)
 
 ## License
 
