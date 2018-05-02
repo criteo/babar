@@ -32,7 +32,7 @@ The following tools are required to build the project:
 In order to build the project, run the following command at the root of the project:
 
 ```
-mvn clean install`
+mvn clean install
 ```
 
 ## Usage
