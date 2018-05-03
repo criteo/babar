@@ -14,12 +14,10 @@
         <module>babar-processor</module>
     </modules>
     <properties>
-        <protobuf.version>3.2.0</protobuf.version>
         <guava.version>19.0</guava.version>
         <scala.version>2.12.4</scala.version>
         <scala.major.version>2.12</scala.major.version>
         <scala.tools.version>2.12</scala.tools.version>
-        <scalapb.version>0.5.47</scalapb.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <encoding>UTF-8</encoding>
@@ -28,8 +26,6 @@
         <scalatest.version>3.2.0-SNAP5</scalatest.version>
         <hadoop.version>2.6.5</hadoop.version>
         <scalaz-stream.version>0.8.6a</scalaz-stream.version>
-        <json4s.version>3.3.0</json4s.version>
-        <slf4j.version>1.5.2</slf4j.version>
         <scala-parser-combinators.version>1.0.6</scala-parser-combinators.version>
         <commons-lang3.version>3.7</commons-lang3.version>
         <scallop.version>3.1.1</scallop.version>
