@@ -25,7 +25,7 @@ trait Transformation[-IN, +OUT] {
 }
 
 case class FilterMetric(metric: String) extends Transformation[Gauge, Gauge] {
-  override def transform(g: Gauge): Iterable[Gauge] = if (g.metric.startsWith(metric)) Some(g) else None
+  override def transform(g: Gauge): Iterable[Gauge] = if (g.metric == metric) Some(g) else None
 }
 
 case class Cap(min: Double, max: Double) extends Transformation[Gauge, Gauge] {

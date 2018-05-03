@@ -151,31 +151,31 @@ object Processor {
           aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // ----------------------------------- IO -------------------------------------
       //max
-      "max proc read bytes / sec" ->
-        (FilterMetric("PROC_TREE_RCHAR") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and MaxOverAllContainersByTime()),
-      "max proc write bytes / sec" ->
-        (FilterMetric("PROC_TREE_WCHAR") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and MaxOverAllContainersByTime()),
-      "max proc disk read bytes / sec" ->
-        (FilterMetric("PROC_TREE_READ_BYTES") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and MaxOverAllContainersByTime()),
-      "max proc disk write bytes / sec" ->
-        (FilterMetric("PROC_TREE_WRITE_BYTES") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and MaxOverAllContainersByTime()),
+      "max proc peak read bytes / sec" ->
+        (FilterMetric("PROC_TREE_RCHAR_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
+      "max proc peak write bytes / sec" ->
+        (FilterMetric("PROC_TREE_WCHAR_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
+      "max proc peak disk read bytes / sec" ->
+        (FilterMetric("PROC_TREE_READ_BYTES_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
+      "max proc peak disk write bytes / sec" ->
+        (FilterMetric("PROC_TREE_WRITE_BYTES_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       // median
-      "median proc read bytes / sec" ->
-        (FilterMetric("PROC_TREE_RCHAR") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and MedianOverAllContainersByTime()),
-      "median proc write bytes / sec" ->
-        (FilterMetric("PROC_TREE_WCHAR") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and MedianOverAllContainersByTime()),
-      "median proc disk read bytes / sec" ->
-        (FilterMetric("PROC_TREE_READ_BYTES") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and MedianOverAllContainersByTime()),
-      "median proc disk write bytes / sec" ->
-        (FilterMetric("PROC_TREE_WRITE_BYTES") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc peak read bytes / sec" ->
+        (FilterMetric("PROC_TREE_RCHAR_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc peak write bytes / sec" ->
+        (FilterMetric("PROC_TREE_WCHAR_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc peak disk read bytes / sec" ->
+        (FilterMetric("PROC_TREE_READ_BYTES_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
+      "median proc peak disk write bytes / sec" ->
+        (FilterMetric("PROC_TREE_WRITE_BYTES_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MedianOverAllContainersByTime()),
       // accumulated
       "accumulated proc read bytes" ->
         (FilterMetric("PROC_TREE_RCHAR") and DiscretizeTime(timePrecMs)
@@ -197,8 +197,8 @@ object Processor {
         (FilterMetric("CPU_TRACES")
           aggregate TracesAggregation(conf.minTracesRatio(), conf.maxTracesDepth())),
       // profilers
-      "isJvmProfiler" -> (FilterMetric("JVM_") aggregate TrueIfAny()),
-      "isProcFSProfiler" -> (FilterMetric("PROC_") aggregate TrueIfAny()),
+      "isJvmProfiler" -> (FilterMetric("JVM_CPU_TIME") aggregate TrueIfAny()),
+      "isProcFSProfiler" -> (FilterMetric("PROC_TREE_CPU_TIME") aggregate TrueIfAny()),
       "isStackTracesProfiler" -> (FilterMetric("CPU_TRACES") aggregate TrueIfAny())
     )
 

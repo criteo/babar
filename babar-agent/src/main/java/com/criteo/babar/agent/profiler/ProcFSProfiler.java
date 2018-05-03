@@ -117,6 +117,12 @@ public class ProcFSProfiler extends SamplingProfiler {
         double deltaRChar = rchar - prevRChar.getAndSet(rchar);
         double deltaWChar = wchar - prevWChar.getAndSet(wchar);
 
+        double sec = deltaLastSampleMs / 1000D;
+        double readBytesPerSec = deltaReadBytes / sec;
+        double writeBytesPerSec = deltaWriteBytes / sec;
+        double rCharPerSec = deltaRChar / sec;
+        double wCharPerSec = deltaWChar / sec;
+
         double treeCpuTime = treeTicksDelta * OSUtils.getJiffyLengthInMillis();
         double userCpuLoad = userTicksDelta / hostTotalTicksDelta;
         double systemCpuLoad = systemTicksDelta / hostTotalTicksDelta;
@@ -134,5 +140,9 @@ public class ProcFSProfiler extends SamplingProfiler {
         reporter.reportEvent("PROC_TREE_WRITE_BYTES", "", deltaWriteBytes, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_RCHAR", "", deltaRChar, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_WCHAR", "", deltaWChar, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_READ_BYTES_PER_SEC", "", readBytesPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_WRITE_BYTES_PER_SEC", "", writeBytesPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_RCHAR_PER_SEC", "", rCharPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_WCHAR_PER_SEC", "", wCharPerSec, sampleTimeMs);
     }
 }
