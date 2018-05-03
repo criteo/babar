@@ -204,8 +204,8 @@ Similarly to Spark and MapReduce, Hive allows to easily distribute a jar from `H
 
 ```
 ADD FILE /path/to/babar-agent-0.2.0-SNAPSHOT.jar;
-SET mapreduce.map.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,MemoryProfiler[reservedMB=2560],CPUTimeProfiler";
-SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,MemoryProfiler[reservedMB=3684],CPUTimeProfiler";
+SET mapreduce.map.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,JVMProfiler[reservedMB=2560],ProcFSProfiler";
+SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,JVMProfiler[reservedMB=3584],ProcFSProfiler";
 ```
 
 As for other MapReduce applications, reserved memory values will need to be adjusted for mappers and reducers independently.
