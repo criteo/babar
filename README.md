@@ -63,15 +63,15 @@ The **babar-agent** instuments the JVM to register and logs the resource usage m
 In order to add the agent to a JVM, add the following arguments to the java command line used to start your application:
 
 ```
- -javaagent:/path/to/babar-agent.jar=StackTraceProfiler,JVMProfiler[reservedMB=1024],ProcFSProfiler
+ -javaagent:/path/to/babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,JVMProfiler[reservedMB=1024],ProcFSProfiler
 ```
 
-You will need to replace `/path/to/babar-agent.jar` with the actual path of the agent jar on your system. This jar must be locally accessible to your JVM (i.e. distributed on all your YARN nodes).
+You will need to replace `/path/to/babar-agent-0.2.0-SNAPSHOT.jar` with the actual path of the agent jar on your system. This jar must be locally accessible to your JVM (i.e. distributed on all your YARN nodes).
 
 The profilers can be set and configured using this command line by adding parameters within brackets as shown in the following example:
 
 ```
--javaagent:./babar-agent.jar=StackTraceProfiler[profilingMs=1000,reportingMs=600000],JVMProfiler[profilingMs=1000,reservedMB=2560],ProcFSProfiler[profilingMs=1000]
+-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=1000,reportingMs=600000],JVMProfiler[profilingMs=1000,reservedMB=2560],ProcFSProfiler[profilingMs=1000]
 ```
 
 The available profilers and their configuration are described bellow. They can be used together or independently of each other.
@@ -176,8 +176,8 @@ No code changes are required to instrument a Spark job since Spark allows to dis
 In order to instrument your Spark application, simply add these arguments to your `spark-submit` command:
 
 ```
---files ./babar-agent.jar
---conf spark.executor.extraJavaOptions="-javaagent:./babar-agent.jar=StackTraceProfiler,JVMProfiler[reservedMB=2560],ProcFSProfiler"
+--files ./babar-agent-0.2.0-SNAPSHOT.jar
+--conf spark.executor.extraJavaOptions="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,JVMProfiler[reservedMB=2560],ProcFSProfiler"
 ```
 
 You can adjust the reserved memory setting (`reservedMB`) according to `spark.executor.memory + spark.yarn.executor.memoryOverhead`.
@@ -191,9 +191,9 @@ No code modification is required to instrument a MapReduce, Cascading or Scaldin
 In order to instrument your MapReduce job, use the following arguments:
 
 ```
--files hdfs:///path/to/babar-agent.jar \
--Dmapreduce.map.java.opts="-javaagent:./babar-agent.jar=StackTraceProfiler,JVMProfiler[reservedMB=2560],ProcFSProfiler" \
--Dmapreduce.reduce.java.opts="-javaagent:./babar-agent.jar=StackTraceProfiler,JVMProfiler[reservedMB=3584],ProcFSProfiler"
+-files hdfs:///path/to/babar-agent-0.2.0-SNAPSHOT.jar \
+-Dmapreduce.map.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,JVMProfiler[reservedMB=2560],ProcFSProfiler" \
+-Dmapreduce.reduce.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,JVMProfiler[reservedMB=3584],ProcFSProfiler"
 ```
 
 You can adjust the reserved memory values for mappers and reducers independently. These values can also be automatically set by instrumenting the jobs programmatically
@@ -203,9 +203,9 @@ You can adjust the reserved memory values for mappers and reducers independently
 Similarly to Spark and MapReduce, Hive allows to easily distribute a jar from `HDFS` to the executors. To profile an Hive application, simply execute the following commands in Hive before your query:
 
 ```
-ADD FILE /path/to/babar-agent.jar;
-SET mapreduce.map.java.opts="-javaagent:./babar-agent.jar=StackTraceProfiler,MemoryProfiler[reservedMB=2560],CPUTimeProfiler";
-SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-1.0-SNAPSHOT.jar=StackTraceProfiler,MemoryProfiler[reservedMB=3684],CPUTimeProfiler";
+ADD FILE /path/to/babar-agent-0.2.0-SNAPSHOT.jar;
+SET mapreduce.map.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,MemoryProfiler[reservedMB=2560],CPUTimeProfiler";
+SET mapreduce.reduce.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,MemoryProfiler[reservedMB=3684],CPUTimeProfiler";
 ```
 
 As for other MapReduce applications, reserved memory values will need to be adjusted for mappers and reducers independently.
