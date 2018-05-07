@@ -44,13 +44,13 @@ Babar is composed of three main components:
 
 - `babar-agent`
 
-    The **babar-agent** is a `java-agent` program. An agent is a jar that can be attached to a JVM in order to intrument this JVM. The agent fecthes, at regular interval, information on the resource comsumption and logs the resulting metrics in a plain text file named `babar.log` inside the YARN log directory. YARN's log aggregation at the end of the application combines all the executors logs into a single log file available on HDFS.
+    The **babar-agent** is a `java-agent` program. An agent is a jar that can be attached to a JVM in order to instrument this JVM. The agent fetches, at regular interval, information on the resource consumption and logs the resulting metrics in a plain text file named `babar.log` inside the YARN log directory. YARN's log aggregation at the end of the application combines all the executors logs into a single log file available on HDFS.
 
 - `babar-processor`
 
-    The **babar-processor** is the piece of software responsible for parsing the aggregated log file from the YARN application and aggregating the metrics found to produce the report. the logs are parsed as streams which allows to aggregate large logs files (dozens of GB).
+    The **babar-processor** is the piece of software responsible for parsing the aggregated log file from the YARN application and aggregating the metrics to produce the report. The logs are parsed as streams which allows to aggregate large logs files (dozens of GB).
 
-    Once the **babar-processor** has run, a report HTML file is generated, containing all the graphs (memory, CPU usage, GC usage, executor counts, flame-graphs,...). This record can easily be shared by the teams and saved for later use.
+    Once the **babar-processor** has run, a report HTML file is generated, containing all the graphs (memory, CPU usage, GC usage, executor counts, flame-graphs,...). This record can easily be shared by teams and saved for later use.
 
 - `babar-report`
 
@@ -58,7 +58,7 @@ Babar is composed of three main components:
 
 ### Babar-agent
 
-The **babar-agent** instuments the JVM to register and logs the resource usage metrics. It is a standard `java-agent` component (see the [instrumentation API doc](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) for more information).
+The **babar-agent** instruments the JVM to register and log the resource usage metrics. It is a standard `java-agent` component (see the [instrumentation API doc](https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) for more information).
 
 In order to add the agent to a JVM, add the following arguments to the java command line used to start your application:
 
@@ -74,7 +74,7 @@ The profilers can be set and configured using this command line by adding parame
 -javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler[profilingMs=1000,reportingMs=600000],JVMProfiler[profilingMs=1000,reservedMB=2560],ProcFSProfiler[profilingMs=1000]
 ```
 
-The available profilers and their configuration are described bellow. They can be used together or independently of each other.
+The available profilers and their configuration are described below. They can be used together or independently of each other.
 
 #### JVMProfiler
 
@@ -85,7 +85,7 @@ This profiler accepts the following parameters:
 <table>
       <tr>
             <td><strong>reservedMB</strong> (optional)</td>
-            <td>The amount of memeory reserved in megabytes for the container in which the JVM runs. This value allows Babar to plot the reserved memory despite not having access to it (as it is managed by the resource allocator, i.e. YARN).</td>
+            <td>The amount of memory reserved in megabytes for the container in which the JVM runs. This value allows Babar to plot the reserved memory despite not having access to it (as it is managed by the resource allocator, i.e. YARN).</td>
       </tr>
       <tr>
             <td><strong>profilingMs</strong> (optional)</td>
@@ -97,7 +97,7 @@ This profiler accepts the following parameters:
 
 The `ProcFSProfiler` logs OS-level metrics that are retrieved using the `proc` file system. This profiler is able to get metrics for the entire process tree, including processes started by the JVM but ran outside of it.
 
-Because the `proc` filesystem is only available on unix-like systems and its implementation is platform dependent and, **this profiler will only run on linux systems**. You may find more information on the `proc` filesystem in the [official man page](http://man7.org/linux/man-pages/man5/proc.5.html).
+Because the `proc` filesystem is only available on unix-like systems and its implementation is platform dependent, **this profiler will only run on linux systems**. You may find more information on the `proc` filesystem in the [official man page](http://man7.org/linux/man-pages/man5/proc.5.html).
 
 This profiler accepts the following parameters:
 
@@ -112,7 +112,7 @@ This profiler accepts the following parameters:
 
 The `StackTraceProfiler` profiler registers the stack traces of all `RUNNABLE` JVM threads at regular intervals in order to build [flame graphs](http://www.brendangregg.com/flamegraphs.html) of the time spent by all your JVMs in method calls.
 
-The graphs are built by sampling the stack traces of the JVM at a regular interval (the `profilingMs` options). The traces are logged at another interval (the `reportingMs` option) in order to aggregate multiple traces before logging them to save space in the logs, which could otherwise takes hundreds of gigabytes. The traces are always logged on the JVM shutdown, so one can set the repoting interval at a very high value in order to save the most space in the logs if they are not interested in having traces logged in case the JVM is abruptly killed (they will still be logged if an exception is raised by the application code but the JVM is allowed to go through the shutdown hooks).
+The graphs are built by sampling the stack traces of the JVM at a regular interval (the `profilingMs` options). The traces are logged at another interval (the `reportingMs` option) in order to aggregate multiple traces before logging them to save space in the logs, which could otherwise takes hundreds of gigabytes. The traces are always logged on the JVM shutdown, so one can set the reporting interval at a very high value in order to save the most space in the logs if they are not interested in having traces logged in case the JVM is abruptly killed (they will still be logged if an exception is raised by the application code but the JVM is allowed to go through the shutdown hooks).
 
 This profiler accepts the following parameters:
 
@@ -137,7 +137,7 @@ The processor aggregates stack traces as flame graphs [flame graphs](http://www.
 
 1. aggregating the logs
 
-      The processor needs to parse the application log aggregated by YARN (or any other log aggregation mechanism), either from HDFS or from a local log file that has been fecthed using the following command (replace the application id with yours):
+      The processor needs to parse the application log aggregated by YARN (or any other log aggregation mechanism), either from HDFS or from a local log file that has been fetched using the following command (replace the application id with yours):
 
       ```
       yarn logs --applicationId application_1514203639546_124445 > myAppLog.log
@@ -157,7 +157,7 @@ The processor aggregates stack traces as flame graphs [flame graphs](http://www.
       -c, --containers  <arg>         if set, only metrics of containers matching these prefixes are aggregated
                                       (comma-separated)
       -d, --max-traces-depth  <arg>   max depth of stack traces
-      -r, --min-traces-ratio  <arg>   min ratio of appearance in profiles for traces to be kept
+      -r, --min-traces-ratio  <arg>   min ratio of occurences in profiles for traces to be kept
       -o, --output-file  <arg>        path of the output file (default: ./babar_{date}.html)
       -t, --time-precision  <arg>     time precision (in ms) to use in aggregations
       --help                          Show help message
@@ -167,7 +167,7 @@ The processor aggregates stack traces as flame graphs [flame graphs](http://www.
       ```
 
       Upon completion, the report HTML file is generated with a name such as `babar_2018-04-29_12-04-12.html`.
-      This file contains all the aggregated measurements
+      This file contains all the aggregated measurements.
 
 ## Profiling a Spark application
 
@@ -186,7 +186,7 @@ You can then use the `yarn logs` command to get the aggregated log file and proc
 
 ## Profiling a Scalding or MapReduce application
 
-No code modification is required to instrument a MapReduce, Cascading or Scalding application as MapReduce allows distributing jars to the containers from `HDFS` using the `-files` argument.
+No code change is required to instrument a MapReduce, Cascading or Scalding application as MapReduce allows distributing jars to the containers from `HDFS` using the `-files` argument.
 
 In order to instrument your MapReduce job, use the following arguments:
 
@@ -196,7 +196,7 @@ In order to instrument your MapReduce job, use the following arguments:
 -Dmapreduce.reduce.java.opts="-javaagent:./babar-agent-0.2.0-SNAPSHOT.jar=StackTraceProfiler,JVMProfiler[reservedMB=3584],ProcFSProfiler"
 ```
 
-You can adjust the reserved memory values for mappers and reducers independently. These values can also be automatically set by instrumenting the jobs programmatically
+You can adjust the reserved memory values for mappers and reducers independently. These values can also be automatically set by instrumenting the jobs programmatically.
 
 ## Profiling a Hive application
 
