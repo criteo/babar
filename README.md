@@ -29,8 +29,8 @@ Currently babar is designed to **profile YARN applications**, but could be exten
 
 The following tools are required to build the project:
 
-- **maven**
-- **npm**
+- **maven** (version 3 or greater)
+- **java (JDK)** (version 1.8 or greater)
 
 In order to build the project, run the following command at the root of the project:
 
