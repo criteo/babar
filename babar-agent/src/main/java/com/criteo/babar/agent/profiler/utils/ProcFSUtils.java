@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ProcFSUtils {
 
@@ -50,11 +52,10 @@ public class ProcFSUtils {
 
     /**
      * Get the stat for the given pid and all of its children.
-     * @param rootPid               The root pid
+     * @param pids                  The pids of the process tree
      * @return                      An array of ProcPidStat objects
      */
-    public static ProcPidStat[] statWithChildren(int rootPid) throws IOException {
-        int[] pids = getChildrenPids(rootPid);
+    public static ProcPidStat[] stat(int[] pids) throws IOException {
         ProcPidStat[] stats = new ProcPidStat[pids.length];
         for (int i = 0; i < pids.length; i++) {
             stats[i] = stat(pids[i]);
@@ -120,8 +121,7 @@ public class ProcFSUtils {
         return parsePidIO(output);
     }
 
-    public static ProcPidIO[] ioWithChildren(int rootPid) throws IOException {
-        int[] pids = getChildrenPids(rootPid);
+    public static ProcPidIO[] io(int[] pids) throws IOException {
         ProcPidIO[] ios = new ProcPidIO[pids.length];
         for (int i = 0; i < pids.length; i++) {
             ios[i] = io(pids[i]);
@@ -169,7 +169,6 @@ public class ProcFSUtils {
         }
 
         return new ProcPidIO(rchar, wchar, readBytes, writeBytes);
-
     }
 
     public static class ProcPidStat {
@@ -232,5 +231,170 @@ public class ProcFSUtils {
             this.readBytes = readBytes;
             this.writeBytes = writeBytes;
         }
+    }
+
+    public static class ProcSmaps {
+        public long size;
+        public long rss;
+        public long pss;
+        public long sharedClean;
+        public long sharedDirty;
+        public long privateClean;
+        public long privateDirty;
+        public long anonymous;
+        public long referenced;
+
+        public ProcSmaps(long size, long rss, long pss, long sharedClean, long sharedDirty, long privateClean, long privateDirty, long anonymous, long referenced) {
+            this.size = size;
+            this.rss = rss;
+            this.pss = pss;
+            this.sharedClean = sharedClean;
+            this.sharedDirty = sharedDirty;
+            this.privateClean = privateClean;
+            this.privateDirty = privateDirty;
+            this.anonymous = anonymous;
+            this.referenced = referenced;
+        }
+    }
+
+    public static ProcSmaps[] smaps(int[] pids, String[] exceptPermissions) throws IOException {
+        ProcSmaps[] smaps = new ProcSmaps[pids.length];
+        for (int i = 0; i < pids.length; i++) {
+            smaps[i] = smaps(pids[i], exceptPermissions);
+        }
+        return smaps;
+    }
+
+    public static ProcSmaps smaps(int pid, String[] exceptPermissions) throws IOException {
+        String output = OSUtils.exec(new String[]{"cat", "/proc/" + pid + "/smaps"});
+        return parseSmaps(output, exceptPermissions);
+    }
+
+    public static final String READ_ONLY_WITH_SHARED_PERMISSION = "r--s";
+    public static final String READ_EXECUTE_WITH_SHARED_PERMISSION = "r-xs";
+
+    public enum MemInfo {
+        SIZE("Size"),
+        RSS("Rss"),
+        PSS("Pss"),
+        SHARED_CLEAN("Shared_Clean"),
+        SHARED_DIRTY("Shared_Dirty"),
+        PRIVATE_CLEAN("Private_Clean"),
+        PRIVATE_DIRTY("Private_Dirty"),
+        REFERENCED("Referenced"),
+        ANONYMOUS("Anonymous"),
+        ANON_HUGE_PAGES("AnonHugePages"),
+        SWAP("swap"),
+        KERNEL_PAGE_SIZE("kernelPageSize"),
+        MMU_PAGE_SIZE("mmuPageSize");
+
+        private String name;
+
+        private MemInfo(String name) {
+            this.name = name;
+        }
+
+        public static MemInfo getMemInfoByName(String name) {
+            String searchName = name.trim();
+            for (MemInfo info : MemInfo.values()) {
+                if (info.name.trim().equalsIgnoreCase(searchName)) {
+                    return info;
+                }
+            }
+            return null;
+        }
+    }
+
+    private static final Pattern ADDRESS_PATTERN = Pattern
+            .compile("([[a-f]|(0-9)]*)-([[a-f]|(0-9)]*)(\\s)*([rxwps\\-]*)");
+    private static final Pattern MEM_INFO_PATTERN = Pattern
+            .compile("(^[A-Z].*):[\\s ]*(.*)");
+
+    private static final String KB = "kB";
+
+    protected static ProcSmaps parseSmaps(String output, String[] exceptPermissions) {
+        String[] lines = output.split("\n");
+
+        boolean allowedPermission = true;
+        long size = 0;
+        long rss = 0;
+        long pss = 0;
+        long sharedClean = 0;
+        long sharedDirty = 0;
+        long privateClean = 0;
+        long privateDirty = 0;
+        long anonymous = 0;
+        long referenced = 0;
+
+        for (String line : lines) {
+            line = line.trim();
+            Matcher address = ADDRESS_PATTERN.matcher(line);
+            if (address.find()) {
+                String permission = address.group(4).trim();
+                allowedPermission = true;
+                // we use an array fo string vs a set because this array is guaranteed to be always
+                // very small (usually <= 2)
+                for (String p: exceptPermissions) {
+                    if (p.equals(permission)) {
+                        allowedPermission = false;
+                        break;
+                    }
+                }
+                continue;
+            }
+            if (!allowedPermission) {
+                continue;
+            }
+            Matcher memInfo = MEM_INFO_PATTERN.matcher(line);
+            if (memInfo.find()) {
+                String key = memInfo.group(1).trim();
+                String value = memInfo.group(2).replace(KB, "").trim();
+
+                int val = 0;
+                try {
+                    val = Integer.parseInt(value.trim());
+                } catch (NumberFormatException ne) {
+                    continue;
+                }
+
+                MemInfo info = MemInfo.getMemInfoByName(key);
+                if (info == null) {
+                    continue;
+                }
+
+                switch (info) {
+                    case SIZE:
+                        size += val * 1024;
+                        break;
+                    case RSS:
+                        rss += val * 1024;
+                        break;
+                    case PSS:
+                        pss += val * 1024;
+                        break;
+                    case SHARED_CLEAN:
+                        sharedClean += val * 1024;
+                        break;
+                    case SHARED_DIRTY:
+                        sharedDirty += val * 1024;
+                        break;
+                    case PRIVATE_CLEAN:
+                        privateClean += val * 1024;
+                        break;
+                    case PRIVATE_DIRTY:
+                        privateDirty += val * 1024;
+                        break;
+                    case REFERENCED:
+                        referenced += val * 1024;
+                        break;
+                    case ANONYMOUS:
+                        anonymous += val * 1024;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return new ProcSmaps(size, rss, pss, sharedClean, sharedDirty, privateClean, privateDirty, anonymous, referenced);
     }
 }

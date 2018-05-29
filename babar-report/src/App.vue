@@ -72,18 +72,19 @@ export default {
 }
 
 .explanation {
-  /*padding-bottom: 10px;
-  border-bottom: 1px solid #dddddd;*/
-  padding: 10px; 
-  /*border-radius: 0.25rem;
-  background-color: #F7FCFF;
-  border: 1px solid #A7CCE2;
-  border-left: 4px solid #A7CCE2;*/
+  padding: 10px;
   margin: 0 auto 20px auto;
   color: #777777;
   text-align: justify;
   padding-bottom: 20px;
   border-bottom: 1px solid #dddddd;
-}
 
+  .conf-value {
+    font-size: 0.95em;
+    background-color: #eeeeee;
+    padding: 3px 6px;
+    border-radius: 2px;
+    color: #333333;
+  }
+}
 </style>

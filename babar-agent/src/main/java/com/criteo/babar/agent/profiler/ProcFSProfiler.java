@@ -14,6 +14,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ProcFSProfiler extends SamplingProfiler {
 
+    // when using 'yarn.nodemanager.container-monitor.procfs-tree.smaps-based-rss.enabled', the following
+    // permissions are not considered when computing resident memory
+    private final static String[] SMAPS_YARN_PERMISSIONS_FILTER = new String[]{"r--s", "r-xs"};
+
     private final AtomicLong prevHostTotalCpuTicks = new AtomicLong(0L);
     private final AtomicLong prevHostActiveCpuTicks = new AtomicLong(0L);
     private final AtomicLong prevUserCpuTicks = new AtomicLong(0L);
@@ -46,9 +50,10 @@ public class ProcFSProfiler extends SamplingProfiler {
 
     @Override
     public void start(long startTimeMs) throws Exception {
-        ProcFSUtils.ProcPidStat[] processesStats = ProcFSUtils.statWithChildren(pid);
+        int[] pids = ProcFSUtils.getChildrenPids(pid);
+        ProcFSUtils.ProcPidStat[] processesStats = ProcFSUtils.stat(pids);
         ProcFSUtils.ProcStat cpuStats = ProcFSUtils.stat();
-        ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.ioWithChildren(pid);
+        ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.io(pids);
 
         long userTicks = 0L;
         long systemTicks = 0L;
@@ -79,12 +84,15 @@ public class ProcFSProfiler extends SamplingProfiler {
     @Override
     public void sample(long sampleTimeMs, long deltaLastSampleMs) throws Exception {
 
-        ProcFSUtils.ProcPidStat[] processesStats = ProcFSUtils.statWithChildren(pid);
+        int[] pids = ProcFSUtils.getChildrenPids(pid);
+        ProcFSUtils.ProcPidStat[] processesStats = ProcFSUtils.stat(pids);
         ProcFSUtils.ProcStat cpuStats = ProcFSUtils.stat();
-        ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.ioWithChildren(pid);
+        ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.io(pids);
+        ProcFSUtils.ProcSmaps[] smaps = ProcFSUtils.smaps(pids, SMAPS_YARN_PERMISSIONS_FILTER);
 
         long rssPages = 0L;
         long vMemBytes = 0L;
+        long smapsAnonymousBytes = 0L;          // anonymous pages are pages not backed by a file on disk
         long userTicks = 0L;
         long systemTicks = 0L;
         long hostTotalTicks = cpuStats.getTotalTicks();
@@ -105,6 +113,9 @@ public class ProcFSProfiler extends SamplingProfiler {
             writeBytes += io.writeBytes;
             rchar += io.rchar;
             wchar += io.wchar;
+        }
+        for (ProcFSUtils.ProcSmaps s: smaps) {
+            smapsAnonymousBytes += s.anonymous;
         }
 
         double userTicksDelta = userTicks - prevUserCpuTicks.getAndSet(userTicks);
@@ -144,5 +155,6 @@ public class ProcFSProfiler extends SamplingProfiler {
         reporter.reportEvent("PROC_TREE_WRITE_BYTES_PER_SEC", "", writeBytesPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_RCHAR_PER_SEC", "", rCharPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_WCHAR_PER_SEC", "", wCharPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_SMAPS_ANONYMOUS_BYTES", "", (double)smapsAnonymousBytes, sampleTimeMs);
     }
 }

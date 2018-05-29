@@ -2,7 +2,7 @@ package com.criteo.babar.agent.profiler.utils;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ProcFSUtilsTest {
 
@@ -13,15 +13,6 @@ public class ProcFSUtilsTest {
 
         int self = JVMUtils.getPID();
         ProcFSUtils.stat(self);
-    }
-
-    @Test
-    public void pidStatWithChildren() throws Exception {
-        // not available on systems other than linux
-        if (!ProcFSUtils.isAvailable()) return;
-
-        int self = JVMUtils.getPID();
-        ProcFSUtils.statWithChildren(self);
     }
 
     @Test
@@ -111,5 +102,96 @@ public class ProcFSUtilsTest {
         assertEquals(1117L, io.wchar);
         assertEquals(880640L, io.readBytes);
         assertEquals(36864L, io.writeBytes);
+    }
+
+    @Test
+    public void parseSmapsNoPermissionException() throws Exception {
+        String output = "7f1ada0ca000-7f1ada19c000 rw-p 00000000 00:00 0 \n" +
+                "Size:                840 kB\n" +
+                "Rss:                 836 kB\n" +
+                "Pss:                 836 kB\n" +
+                "Shared_Clean:          0 kB\n" +
+                "Shared_Dirty:          0 kB\n" +
+                "Private_Clean:         0 kB\n" +
+                "Private_Dirty:       836 kB\n" +
+                "Referenced:          836 kB\n" +
+                "Anonymous:           836 kB\n" +
+                "AnonHugePages:         0 kB\n" +
+                "Shared_Hugetlb:        0 kB\n" +
+                "Private_Hugetlb:       0 kB\n" +
+                "Swap:                  0 kB\n" +
+                "SwapPss:               0 kB\n" +
+                "KernelPageSize:        4 kB\n" +
+                "MMUPageSize:           4 kB\n" +
+                "Locked:                0 kB\n" +
+                "VmFlags: rd wr mr mw me ac \n" +
+                "7f1ada19c000-7f1ada19d000 r--s 00000000 00:00 0 \n" +  // this permission is not allowed
+                "Size:                  4 kB\n" +
+                "Rss:                   0 kB\n" +
+                "Pss:                   0 kB\n" +
+                "Shared_Clean:          0 kB\n" +
+                "Shared_Dirty:          0 kB\n" +
+                "Private_Clean:         0 kB\n" +
+                "Private_Dirty:         0 kB\n" +
+                "Referenced:            0 kB\n" +
+                "Anonymous:             0 kB\n" +
+                "AnonHugePages:         0 kB\n" +
+                "Shared_Hugetlb:        0 kB\n" +
+                "Private_Hugetlb:       0 kB\n" +
+                "Swap:                  0 kB\n" +
+                "SwapPss:               0 kB\n" +
+                "KernelPageSize:        4 kB\n" +
+                "MMUPageSize:           4 kB\n" +
+                "Locked:                0 kB\n" +
+                "VmFlags: mr mw me ac \n" +
+                "7ffc678ff000-7ffc67901000 r-xs 00000000 00:00 0                          [vdso]\n" +   // this permission is not allowed
+                "Size:                  8 kB\n" +
+                "Rss:                   4 kB\n" +
+                "Pss:                   0 kB\n" +
+                "Shared_Clean:          4 kB\n" +
+                "Shared_Dirty:          0 kB\n" +
+                "Private_Clean:         0 kB\n" +
+                "Private_Dirty:         0 kB\n" +
+                "Referenced:            4 kB\n" +
+                "Anonymous:             0 kB\n" +
+                "AnonHugePages:         0 kB\n" +
+                "Shared_Hugetlb:        0 kB\n" +
+                "Private_Hugetlb:       0 kB\n" +
+                "Swap:                  0 kB\n" +
+                "SwapPss:               0 kB\n" +
+                "KernelPageSize:        4 kB\n" +
+                "MMUPageSize:           4 kB\n" +
+                "Locked:                0 kB\n" +
+                "VmFlags: rd ex mr mw me de \n" +
+                "7f1ada19d000-7f1ada29d000 rw-p 00000000 00:00 0 \n" +
+                "Size:               1024 kB\n" +
+                "Rss:                  12 kB\n" +
+                "Pss:                  12 kB\n" +
+                "Shared_Clean:          0 kB\n" +
+                "Shared_Dirty:          0 kB\n" +
+                "Private_Clean:         0 kB\n" +
+                "Private_Dirty:        12 kB\n" +
+                "Referenced:           12 kB\n" +
+                "Anonymous:            12 kB\n" +
+                "AnonHugePages:         0 kB\n" +
+                "Shared_Hugetlb:        0 kB\n" +
+                "Private_Hugetlb:       0 kB\n" +
+                "Swap:                  0 kB\n" +
+                "SwapPss:               0 kB\n" +
+                "KernelPageSize:        4 kB\n" +
+                "MMUPageSize:           4 kB\n" +
+                "Locked:                0 kB\n" +
+                "VmFlags: rd wr mr mw me ac \n";
+        ProcFSUtils.ProcSmaps smaps = ProcFSUtils.parseSmaps(output, new String[]{"r--s", "r-xs"});
+
+        assertEquals((840 + 1024) * 1024L, smaps.size);
+        assertEquals((836 + 12) * 1024L, smaps.rss);
+        assertEquals((836 + 12) * 1024L, smaps.pss);
+        assertEquals(0, smaps.sharedClean);
+        assertEquals(0, smaps.sharedDirty);
+        assertEquals(0, smaps.privateClean);
+        assertEquals((836 + 12) * 1024L, smaps.privateDirty);
+        assertEquals((836 + 12) * 1024L, smaps.anonymous);
+        assertEquals((836 + 12) * 1024L, smaps.referenced);
     }
 }

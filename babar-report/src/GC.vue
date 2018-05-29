@@ -13,8 +13,8 @@
         <div class="explanation">
           This graph shows the median ratio of wall-clock time spent doing minor and major garbage collections in the JVMs on all containers.<br>
           <strong>Minor GC</strong> only clean the young generation, while <strong>Major GC</strong> cleans both the young and old ones.<br>
-          Major GC should be much less frequent that minor GC, otherwise it could indicate that too many short lived-object are promototed to the old generation.
-          If this is the case, you may want to resize the generations and make sure that no humongous objects use most of the old generation.
+          Major GC should be much less frequent that minor GC, otherwise it could indicate that too many short lived-objects are promototed to the old generation.
+          If this is the case, you may want to resize the generations and make sure that no humongous object uses most of the old generation.
         </div>
         <PlotTimeSeries title="Accumulated JVM CPU time and GC CPU time" yAxis="sec" :series="series.accumulatedCpuGc" />
         <div class="explanation">
