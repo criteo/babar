@@ -63,7 +63,7 @@ export default {
   },
   methods: {
     timelineStyle(left, right) {
-      return "margin-left:" + left + "%;margin-right:" + right + "%;background-color: " + Constants.LIGHT_BLUE
+      return "margin-left:" + left + "%;margin-right:" + right + "%;background-color: " + Constants.BLUE
     },
     timelineTooltip(start, end) {
       return "started at " + start + "\nended at " + end
