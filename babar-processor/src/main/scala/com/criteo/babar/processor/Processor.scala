@@ -96,14 +96,14 @@ object Processor {
         (FilterMetric("PROC_TREE_RSS_MEMORY_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // Anonymous page bytes (mimic YARN if "yarn.nodemanager.container-monitor.procfs-tree.smaps-based-rss.enabled"=true)
-      "total anonymous page bytes" ->
-        (FilterMetric("PROC_TREE_SMAPS_ANONYMOUS_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+      "total corrected RSS memory" ->
+        (FilterMetric("PROC_TREE_SMAPS_CORRECTED_RSS_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and SumOverAllContainersByTime()),
-      "max anonymous page bytes" ->
-        (FilterMetric("PROC_TREE_SMAPS_ANONYMOUS_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
+      "max corrected RSS memory" ->
+        (FilterMetric("PROC_TREE_SMAPS_CORRECTED_RSS_BYTES") and Scale(MB) and DiscretizeTime(timePrecMs)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
-      "accumulated anonymous page bytes" ->
-        (FilterMetric("PROC_TREE_SMAPS_ANONYMOUS_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
+      "accumulated corrected RSS memory" ->
+        (FilterMetric("PROC_TREE_SMAPS_CORRECTED_RSS_BYTES") and Scale(MBSec) and DiscretizeTime(timePrecMs)
           aggregate AvgByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // ---------------------------- CPU using ProcFS data -------------------------------
       "max proc host CPU load" ->

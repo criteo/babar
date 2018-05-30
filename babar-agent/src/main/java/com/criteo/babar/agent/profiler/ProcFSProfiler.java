@@ -92,7 +92,7 @@ public class ProcFSProfiler extends SamplingProfiler {
 
         long rssPages = 0L;
         long vMemBytes = 0L;
-        long smapsAnonymousBytes = 0L;          // anonymous pages are pages not backed by a file on disk
+        long smapsCorrectedRssBytes = 0L;          // anonymous pages are pages not backed by a file on disk
         long userTicks = 0L;
         long systemTicks = 0L;
         long hostTotalTicks = cpuStats.getTotalTicks();
@@ -115,7 +115,7 @@ public class ProcFSProfiler extends SamplingProfiler {
             wchar += io.wchar;
         }
         for (ProcFSUtils.ProcSmaps s: smaps) {
-            smapsAnonymousBytes += s.anonymous;
+            smapsCorrectedRssBytes += Math.min(s.sharedDirty, s.pss) + s.privateDirty + s.privateClean;
         }
 
         double userTicksDelta = userTicks - prevUserCpuTicks.getAndSet(userTicks);
@@ -155,6 +155,6 @@ public class ProcFSProfiler extends SamplingProfiler {
         reporter.reportEvent("PROC_TREE_WRITE_BYTES_PER_SEC", "", writeBytesPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_RCHAR_PER_SEC", "", rCharPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_WCHAR_PER_SEC", "", wCharPerSec, sampleTimeMs);
-        reporter.reportEvent("PROC_TREE_SMAPS_ANONYMOUS_BYTES", "", (double)smapsAnonymousBytes, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_SMAPS_CORRECTED_RSS_BYTES", "", (double)smapsCorrectedRssBytes, sampleTimeMs);
     }
 }
