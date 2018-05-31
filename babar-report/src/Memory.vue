@@ -35,7 +35,7 @@
           <strong>RSS memory</strong> is the size of the memory pages that are loaded in the physical memory (RAM) for your containers process-tree (inclusing non JVM programs).<br>
           <strong>Corrected RSS memory</strong> is the size of the memory pages that are loaded in the physical memory, excluding read-only shared pages (r--s or r-xs). 
           This is the memory accounted for by YARN if <samp class="conf-value">yarn.nodemanager.container-monitor.procfs-tree.smaps-based-rss.enabled</samp> 
-          is <samp class="conf-value">true</samp><br>.
+          is <samp class="conf-value">true</samp>.
         </div>
         <PlotTimeSeries title="Total committed memory" yAxis="MB" :series="series.totalCommitted" />
         <div class="explanation">
@@ -60,7 +60,7 @@
           <strong>RSS memory</strong> is the size of the memory pages that are loaded in the physical memory (RAM) for the container's process-tree (inclusing non JVM programs).<br>
           <strong>Corrected RSS memory</strong> is the size of the memory pages that are loaded in the physical memory, excluding read-only shared pages (r--s or r-xs). 
           This is the memory accounted for by YARN if <samp class="conf-value">yarn.nodemanager.container-monitor.procfs-tree.smaps-based-rss.enabled</samp> 
-          is <samp class="conf-value">true</samp><br>.
+          is <samp class="conf-value">true</samp>.
         </div>
         <PlotTimeSeries title="Max committed memory for any container" yAxis="MB" :series="series.maxCommitted" />
         <div class="explanation">
