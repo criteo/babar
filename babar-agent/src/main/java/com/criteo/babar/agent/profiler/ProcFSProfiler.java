@@ -26,6 +26,8 @@ public class ProcFSProfiler extends SamplingProfiler {
     private final AtomicLong prevWriteBytes = new AtomicLong(0L);
     private final AtomicLong prevRChar = new AtomicLong(0L);
     private final AtomicLong prevWChar = new AtomicLong(0L);
+    private final AtomicLong prevRxBytes = new AtomicLong(0L);
+    private final AtomicLong prevTxBytes = new AtomicLong(0L);
 
     private int pid;
     private long pageSizeBytes;
@@ -54,6 +56,7 @@ public class ProcFSProfiler extends SamplingProfiler {
         ProcFSUtils.ProcPidStat[] processesStats = ProcFSUtils.stat(pids);
         ProcFSUtils.ProcStat cpuStats = ProcFSUtils.stat();
         ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.io(pids);
+        ProcFSUtils.ProcNetIO netio = ProcFSUtils.netio();
 
         long userTicks = 0L;
         long systemTicks = 0L;
@@ -75,6 +78,9 @@ public class ProcFSProfiler extends SamplingProfiler {
         this.prevHostActiveCpuTicks.set(cpuStats.getActiveTicks());
         this.prevReadBytes.set(readBytes);
         this.prevWriteBytes.set(writeBytes);
+        
+        this.prevRxBytes.set(netio.rxBytes);
+        this.prevTxBytes.set(netio.txBytes);
     }
 
     @Override
@@ -89,6 +95,7 @@ public class ProcFSProfiler extends SamplingProfiler {
         ProcFSUtils.ProcStat cpuStats = ProcFSUtils.stat();
         ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.io(pids);
         ProcFSUtils.ProcSmaps[] smaps = ProcFSUtils.smaps(pids, SMAPS_YARN_PERMISSIONS_FILTER);
+        ProcFSUtils.ProcNetIO netio = ProcFSUtils.netio();
 
         long rssPages = 0L;
         long vMemBytes = 0L;
@@ -101,6 +108,8 @@ public class ProcFSProfiler extends SamplingProfiler {
         long writeBytes = 0L;
         long rchar = 0L;
         long wchar = 0L;
+        long rxBytes = netio.rxBytes;
+        long txBytes = netio.txBytes;
 
         for (ProcFSUtils.ProcPidStat stat: processesStats) {
             rssPages += stat.rssPages;
@@ -127,6 +136,8 @@ public class ProcFSProfiler extends SamplingProfiler {
         double deltaWriteBytes = writeBytes - prevWriteBytes.getAndSet(writeBytes);
         double deltaRChar = rchar - prevRChar.getAndSet(rchar);
         double deltaWChar = wchar - prevWChar.getAndSet(wchar);
+        double deltaRxBytes = rxBytes - prevRxBytes.getAndSet(rxBytes);
+        double deltaTxBytes = txBytes - prevTxBytes.getAndSet(txBytes);
 
         double sec = deltaLastSampleMs / 1000D;
         double readBytesPerSec = deltaReadBytes / sec;
@@ -139,6 +150,10 @@ public class ProcFSProfiler extends SamplingProfiler {
         double systemCpuLoad = systemTicksDelta / hostTotalTicksDelta;
         double hostCpuLoad = hostActiveTicksDelta / hostTotalTicksDelta;
         double appCpuLoad = userCpuLoad + systemCpuLoad;
+        
+        //Net IO
+        double rxBytesPerSec = deltaRxBytes / sec;
+        double txBytesPerSec = deltaTxBytes / sec;
 
         reporter.reportEvent("PROC_TREE_RSS_MEMORY_BYTES", "", rssPages * (double)this.pageSizeBytes, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_VIRTUAL_MEMORY_BYTES", "", (double)vMemBytes, sampleTimeMs);
@@ -155,6 +170,8 @@ public class ProcFSProfiler extends SamplingProfiler {
         reporter.reportEvent("PROC_TREE_WRITE_BYTES_PER_SEC", "", writeBytesPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_RCHAR_PER_SEC", "", rCharPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_WCHAR_PER_SEC", "", wCharPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_RXBYTES_PER_SEC", "", rxBytesPerSec, sampleTimeMs);
+        reporter.reportEvent("PROC_TREE_TXBYTES_PER_SEC", "", txBytesPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_SMAPS_CORRECTED_RSS_BYTES", "", (double)smapsCorrectedRssBytes, sampleTimeMs);
     }
 }

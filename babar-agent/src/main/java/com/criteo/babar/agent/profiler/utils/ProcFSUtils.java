@@ -129,7 +129,6 @@ public class ProcFSUtils {
         return ios;
     }
 
-
     protected static ProcPidIO parsePidIO(String output) {
         String[] lines = output.split("\n");
         if (lines.length < 7) {
@@ -170,8 +169,45 @@ public class ProcFSUtils {
 
         return new ProcPidIO(rchar, wchar, readBytes, writeBytes);
     }
+    
+    
+    public static ProcNetIO netio() throws IOException {
+        String output = OSUtils.exec(new String[]{"cat", "/proc/net/dev"});
+        return parseNetIO(output);
+    }
 
-    public static class ProcPidStat {
+    private static ProcNetIO parseNetIO(String output) {
+    	String[] lines = output.split("\n");
+        if (!lines[0].startsWith("Inter")) {
+            throw new RuntimeException("Unexpected first line in output of /proc/dev/net:\n" + output);
+        }
+
+        long rxBytes = -1;
+        long txBytes = -1;
+        
+        for(String line : lines)  {
+        	String[] cols = line.trim().split(" +"); //Trim leading spaces
+        	
+        
+        	//TODO: Check num of cols
+        	if(cols[0].contains(":")) {
+        		rxBytes += Long.parseLong(cols[1]);
+                txBytes += Long.parseLong(cols[9]);
+        	}
+        }
+        //Disable, first line has fewer cols
+        //String[] cols = lines[1].split(" +");
+        /*if (cols.length < 16) {
+            throw new RuntimeException("Unable to parse interface line in output of /proc/dev/net:\n" + lines[0]);
+        }*/
+
+        //String cpu = cols[0];
+        
+        
+        return new ProcNetIO(rxBytes, txBytes);
+	}
+
+	public static class ProcPidStat {
         public final int pid;
         public final long userTicks;        // number of ticks in user mode
         public final long systemTicks;      // number of ticks in kernel mode
@@ -230,6 +266,16 @@ public class ProcFSUtils {
             this.wchar = wchar;
             this.readBytes = readBytes;
             this.writeBytes = writeBytes;
+        }
+    }
+    
+    public static class ProcNetIO {
+        public final long rxBytes;        // bytes received
+        public final long txBytes;       // bytes transmitted
+
+        public ProcNetIO(long rxBytes, long txBytes) {
+            this.rxBytes = rxBytes;
+            this.txBytes = txBytes;
         }
     }
 
