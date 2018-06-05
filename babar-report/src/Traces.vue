@@ -118,6 +118,7 @@ export default {
                 .minFrameSize(4)
                 .color(d => d.data.highlight == true ? HIGHLIGHT_COLOR : colorForNode(d.data))
                 .inverted(true)
+                .sort(false)
 
             d3.select("#traces")
                 .datum(this.tree)
