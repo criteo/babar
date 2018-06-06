@@ -58,10 +58,8 @@ export default {
       isProcFSProfilerUsed: window.data["isProcFSProfiler"],
       series: {
         netIO: _.filter([
-          _.assign({}, window.data["max proc peak net rx bytes / sec"], { name: "max bytes rx/sec", color: Constants.YELLOW, opacity: 0.5}),
-          _.assign({}, window.data["max proc peak net tx bytes / sec"], { name: "max bytes tx/sec", color: Constants.BLUE, opacity: 0.5})
-          //_.assign({}, window.data["median proc peak disk read bytes / sec"], { name: "median disk bytes read/sec", color: Constants.LIGHT_BLUE})
-
+          _.assign({}, window.data["proc net rx bytes / sec"], { name: "bytes received/sec", color: Constants.YELLOW, opacity: 0.5}),
+          _.assign({}, window.data["proc net tx bytes / sec"], { name: "bytes transmitted/sec", color: Constants.BLUE, opacity: 0.5})
         ], s => s.values),
         bytesRead: _.filter([
           _.assign({}, window.data["max proc peak read bytes / sec"], { name: "max bytes read/sec", color: Constants.GREY}),
