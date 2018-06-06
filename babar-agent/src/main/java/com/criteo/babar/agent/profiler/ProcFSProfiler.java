@@ -56,7 +56,7 @@ public class ProcFSProfiler extends SamplingProfiler {
         ProcFSUtils.ProcPidStat[] processesStats = ProcFSUtils.stat(pids);
         ProcFSUtils.ProcStat cpuStats = ProcFSUtils.stat();
         ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.io(pids);
-        ProcFSUtils.ProcNetIO netio = ProcFSUtils.netio();
+        ProcFSUtils.ProcNetIO netIO = ProcFSUtils.netio();
 
         long userTicks = 0L;
         long systemTicks = 0L;
@@ -78,9 +78,9 @@ public class ProcFSProfiler extends SamplingProfiler {
         this.prevHostActiveCpuTicks.set(cpuStats.getActiveTicks());
         this.prevReadBytes.set(readBytes);
         this.prevWriteBytes.set(writeBytes);
-        
-        this.prevRxBytes.set(netio.rxBytes);
-        this.prevTxBytes.set(netio.txBytes);
+
+        this.prevRxBytes.set(netIO.rxBytes);
+        this.prevTxBytes.set(netIO.txBytes);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class ProcFSProfiler extends SamplingProfiler {
         ProcFSUtils.ProcStat cpuStats = ProcFSUtils.stat();
         ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.io(pids);
         ProcFSUtils.ProcSmaps[] smaps = ProcFSUtils.smaps(pids, SMAPS_YARN_PERMISSIONS_FILTER);
-        ProcFSUtils.ProcNetIO netio = ProcFSUtils.netio();
+        ProcFSUtils.ProcNetIO netIO = ProcFSUtils.netio();
 
         long rssPages = 0L;
         long vMemBytes = 0L;
@@ -108,8 +108,8 @@ public class ProcFSProfiler extends SamplingProfiler {
         long writeBytes = 0L;
         long rchar = 0L;
         long wchar = 0L;
-        long rxBytes = netio.rxBytes;
-        long txBytes = netio.txBytes;
+        long rxBytes = netIO.rxBytes;
+        long txBytes = netIO.txBytes;
 
         for (ProcFSUtils.ProcPidStat stat: processesStats) {
             rssPages += stat.rssPages;
@@ -144,16 +144,14 @@ public class ProcFSProfiler extends SamplingProfiler {
         double writeBytesPerSec = deltaWriteBytes / sec;
         double rCharPerSec = deltaRChar / sec;
         double wCharPerSec = deltaWChar / sec;
+        double rxBytesPerSec = deltaRxBytes / sec;
+        double txBytesPerSec = deltaTxBytes / sec;
 
         double treeCpuTime = treeTicksDelta * OSUtils.getJiffyLengthInMillis();
         double userCpuLoad = userTicksDelta / hostTotalTicksDelta;
         double systemCpuLoad = systemTicksDelta / hostTotalTicksDelta;
         double hostCpuLoad = hostActiveTicksDelta / hostTotalTicksDelta;
         double appCpuLoad = userCpuLoad + systemCpuLoad;
-        
-        //Net IO
-        double rxBytesPerSec = deltaRxBytes / sec;
-        double txBytesPerSec = deltaTxBytes / sec;
 
         reporter.reportEvent("PROC_TREE_RSS_MEMORY_BYTES", "", rssPages * (double)this.pageSizeBytes, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_VIRTUAL_MEMORY_BYTES", "", (double)vMemBytes, sampleTimeMs);

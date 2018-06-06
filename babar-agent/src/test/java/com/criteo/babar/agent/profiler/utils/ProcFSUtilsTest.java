@@ -194,4 +194,36 @@ public class ProcFSUtilsTest {
         assertEquals((836 + 12) * 1024L, smaps.anonymous);
         assertEquals((836 + 12) * 1024L, smaps.referenced);
     }
+    
+    @Test
+    public void parseNetIO() throws Exception {
+        String output = "Inter-|   Receive                                                |  Transmit\n" + 
+        		" face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed\n" + 
+        		" wlan0: 179407626  151664    0    0    0     0          0         0  9802910   66528    0    0    0     0       0          0\n" + 
+        		"br-62486ecab361:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
+        		"br-fbe64819fc03:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
+        		"  eth0: 14154021698 10146715    0    0    0     0          0      8648 523034937 5318065    0    0    0     0       0          0\n" + 
+        		"    lo: 11532725   42197    0    0    0     0          0         0 11532725   42197    0    0    0     0       0          0\n" + 
+        		"br-8fc5bc2e8e53:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
+        		"br-c91c731c9737:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
+        		"docker0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
+        		"br-456d4d6fea94:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
+        		"br-943b2843c6cf:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n";
+
+        ProcFSUtils.ProcNetIO io = ProcFSUtils.parseNetIO(output);
+
+        assertEquals(14344962049L, io.rxBytes);
+        assertEquals(544370572L, io.txBytes);
+    }
+    
+    @Test
+    public void parseNetIONoInterfaces() throws Exception {
+        String output = "Inter-|   Receive                                                |  Transmit\n" + 
+        		" face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed\n";
+
+        ProcFSUtils.ProcNetIO io = ProcFSUtils.parseNetIO(output);
+
+        assertEquals(0L, io.rxBytes);
+        assertEquals(0L, io.txBytes);
+    }
 }
