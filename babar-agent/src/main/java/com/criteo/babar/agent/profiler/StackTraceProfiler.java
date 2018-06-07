@@ -24,7 +24,7 @@ public class StackTraceProfiler extends SamplingAggregatingProfiler {
 
     @Override
     protected int getDefaultProfilingMs() {
-        return 100; // profile every 100 ms
+        return 20; // profile every 20 ms
     }
 
     @Override
@@ -38,16 +38,16 @@ public class StackTraceProfiler extends SamplingAggregatingProfiler {
             // certain threads do not have stack traceCache
             if (thread.getStackTrace().length > 0) {
                 String traceKey = formatStackTrace(thread.getThreadName(), thread.getStackTrace());
-                traceCache.increment(traceKey);
+                traceCache.increment(traceKey, sampleTimeMs);
             }
         }
     }
 
     @Override
     public void report() throws Exception {
-        Map<String, Long> traces = traceCache.copyAndclear();
-        for (Map.Entry<String, Long> trace: traces.entrySet()) {
-            reporter.reportEvent("CPU_TRACES", trace.getKey(), trace.getValue().doubleValue(), System.currentTimeMillis());
+        Map<String, Trace> traces = traceCache.copyAndClear();
+        for (Map.Entry<String, Trace> trace: traces.entrySet()) {
+            reporter.reportEvent("CPU_TRACES", trace.getKey(), (double)trace.getValue().count, trace.getValue().firstTimestamp);
         }
     }
 
@@ -84,22 +84,40 @@ public class StackTraceProfiler extends SamplingAggregatingProfiler {
     private class TraceCache {
         // instead of using ConcurrentHashMap, we synchronize on the map object before
         // each operation since ConcurrentHashMap does not provide an atomic equivalent to
-        // copyAndclear()
-        private Map<String, Long> traces = new HashMap<>();
+        // copyAndClear()
+        private Map<String, Trace> traces = new HashMap<>();
 
-        void increment(String trace) {
+        void increment(String trace, long timestamp) {
             synchronized (traces) {
-                traces.compute(trace, (k, v) -> ((v != null) ? v : 0L) + 1L);
+                Trace cur = traces.get(trace);
+                if (cur == null) {
+                    // not in map
+                    cur = new Trace();
+                    traces.put(trace, cur);
+                }
+                cur.inc(1L, timestamp);
             }
         }
 
-        Map<String, Long> copyAndclear() {
-            Map<String, Long> tmp;
+        Map<String, Trace> copyAndClear() {
+            Map<String, Trace> tmp;
             synchronized (traces) {
                 tmp = traces;
                 traces = new HashMap<>(tmp.size());
             }
             return tmp;
+        }
+    }
+
+    private class Trace {
+        public long count = 0L;
+        public long firstTimestamp = -1L;
+
+        public void inc(long amount, long timestamp) {
+            count += amount;
+            if (firstTimestamp <= 0L || firstTimestamp > timestamp) {
+                firstTimestamp = timestamp;
+            }
         }
     }
 }
