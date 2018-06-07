@@ -20,7 +20,7 @@ public abstract class SamplingProfiler extends Profiler implements SamplingSched
 
     // override this method to change the default profiling frequency
     protected int getDefaultProfilingMs() {
-        return 1000;
+        return 2000;
     }
 
     @Override
