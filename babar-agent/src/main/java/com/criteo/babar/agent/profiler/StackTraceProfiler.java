@@ -24,7 +24,7 @@ public class StackTraceProfiler extends SamplingAggregatingProfiler {
 
     @Override
     protected int getDefaultProfilingMs() {
-        return 100; // profile every 100 ms
+        return 20; // profile every 20 ms
     }
 
     @Override
