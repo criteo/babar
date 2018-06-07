@@ -41,7 +41,8 @@ object Processor {
     val aggregations = Map[String, Aggregation[Gauge, _]](
       // ----------------------------- General ----------------------------------
       "containers" ->
-        (DiscretizeTime(timePrecMs) aggregate OneByContainerAndTime() and SumOverAllContainersByTime()),
+        (FilterMetric("JVM_CPU_TIME") and DiscretizeTime(timePrecMs)
+          aggregate OneByContainerAndTime() and SumOverAllContainersByTime()),
       // ------------------------------ Memory ----------------------------------
       // Used
       "total used heap" ->
@@ -201,7 +202,7 @@ object Processor {
           aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // ------------------------------ Containers ----------------------------------
       "containers timeline" ->
-        StartStopContainerTime(),
+        (FilterMetric("JVM_CPU_TIME") aggregate StartStopContainerTime()),
       // ------------------------------ Traces ----------------------------------
       "traces" ->
         (FilterMetric("CPU_TRACES")
