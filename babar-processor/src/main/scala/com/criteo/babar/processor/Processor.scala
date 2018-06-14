@@ -202,10 +202,10 @@ object Processor {
       // net io
       "proc net rx bytes / sec" ->
         (FilterMetric("PROC_TREE_RXBYTES_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
       "proc net tx bytes / sec" ->
         (FilterMetric("PROC_TREE_TXBYTES_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
-          aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
           
       // ------------------------------ Containers ----------------------------------
       "containers timeline" ->
