@@ -16,7 +16,7 @@ public class ProcFSProfiler extends SamplingProfiler {
 
     // when using 'yarn.nodemanager.container-monitor.procfs-tree.smaps-based-rss.enabled', the following
     // permissions are not considered when computing resident memory
-    private final static String[] SMAPS_YARN_PERMISSIONS_FILTER = new String[]{"r--s", "r-xs"};
+    private final static String[] SMAPS_IGNORE_PERMISSIONS = new String[]{"r--s", "r-xs"};
 
     private final AtomicLong prevHostTotalCpuTicks = new AtomicLong(0L);
     private final AtomicLong prevHostActiveCpuTicks = new AtomicLong(0L);
@@ -94,7 +94,7 @@ public class ProcFSProfiler extends SamplingProfiler {
         ProcFSUtils.ProcPidStat[] processesStats = ProcFSUtils.stat(pids);
         ProcFSUtils.ProcStat cpuStats = ProcFSUtils.stat();
         ProcFSUtils.ProcPidIO[] ios = ProcFSUtils.io(pids);
-        ProcFSUtils.ProcSmaps[] smaps = ProcFSUtils.smaps(pids, SMAPS_YARN_PERMISSIONS_FILTER);
+        ProcFSUtils.ProcSmaps[] smaps = ProcFSUtils.smaps(pids);
         ProcFSUtils.ProcNetIO netIO = ProcFSUtils.netio();
 
         long rssPages = 0L;
@@ -124,8 +124,12 @@ public class ProcFSProfiler extends SamplingProfiler {
             wchar += io.wchar;
         }
         for (ProcFSUtils.ProcSmaps s: smaps) {
-            smapsCorrectedRssBytes += Math.min(s.sharedDirty, s.pss) + s.privateDirty + s.privateClean;
+            if (isPermissionAllowed(s)) {
+                smapsCorrectedRssBytes += Math.min(s.pss, s.sharedDirty) + s.privateDirty + s.privateClean;
+            }
         }
+        // convert from KB to Bytes
+        smapsCorrectedRssBytes *= 1024;
 
         double userTicksDelta = userTicks - prevUserCpuTicks.getAndSet(userTicks);
         double systemTicksDelta = systemTicks - prevSystemCpuTicks.getAndSet(systemTicks);
@@ -171,5 +175,16 @@ public class ProcFSProfiler extends SamplingProfiler {
         reporter.reportEvent("PROC_TREE_RXBYTES_PER_SEC", "", rxBytesPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_TXBYTES_PER_SEC", "", txBytesPerSec, sampleTimeMs);
         reporter.reportEvent("PROC_TREE_SMAPS_CORRECTED_RSS_BYTES", "", (double)smapsCorrectedRssBytes, sampleTimeMs);
+    }
+
+    private boolean isPermissionAllowed(ProcFSUtils.ProcSmaps smaps) {
+        boolean allowed = true;
+        for (String p: SMAPS_IGNORE_PERMISSIONS) {
+            if (p.equals(smaps.permission)) {
+                allowed = false;
+                break;
+            }
+        }
+        return allowed;
     }
 }

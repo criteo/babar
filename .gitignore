@@ -18,3 +18,4 @@ target/
 wordcount_output/
 **/output
 **/bin/
+babar-report/node/

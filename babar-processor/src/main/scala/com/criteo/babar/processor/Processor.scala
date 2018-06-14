@@ -14,7 +14,7 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
   val outputFile = opt[String](short = 'o', descr = "path of the output file (default: ./babar_{date}.html)", default = Some(s"babar_${formatter.format(LocalDateTime.now())}.html"))
   val containers = opt[String](short = 'c', descr = "if set, only metrics of containers matching these prefixes are aggregated (comma-separated)", default = Some(""))
   val maxTracesDepth = opt[Int](short = 'd', descr = "max depth of stack traces", default = Some(100))
-  val minTracesRatio = opt[Double](short = 'r', descr = "min ratio of appearance in profiles for traces to be kept", default = Some(0.001))
+  val minTracesRatio = opt[Double](short = 'r', descr = "min ratio of appearance in profiles for traces to be kept", default = Some(0.00005))
   val logFile = trailArg[String](descr = "the log file to open")
   verify()
 }
@@ -41,7 +41,8 @@ object Processor {
     val aggregations = Map[String, Aggregation[Gauge, _]](
       // ----------------------------- General ----------------------------------
       "containers" ->
-        (DiscretizeTime(timePrecMs) aggregate OneByContainerAndTime() and SumOverAllContainersByTime()),
+        (FilterMetric("JVM_CPU_TIME") and DiscretizeTime(timePrecMs)
+          aggregate OneByContainerAndTime() and SumOverAllContainersByTime()),
       // ------------------------------ Memory ----------------------------------
       // Used
       "total used heap" ->
@@ -209,7 +210,7 @@ object Processor {
           
       // ------------------------------ Containers ----------------------------------
       "containers timeline" ->
-        StartStopContainerTime(),
+        (FilterMetric("JVM_CPU_TIME") aggregate StartStopContainerTime()),
       // ------------------------------ Traces ----------------------------------
       "traces" ->
         (FilterMetric("CPU_TRACES")

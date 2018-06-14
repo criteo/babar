@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -282,8 +285,9 @@ public class ProcFSUtils {
         public long privateDirty;
         public long anonymous;
         public long referenced;
+        public String permission;
 
-        public ProcSmaps(long size, long rss, long pss, long sharedClean, long sharedDirty, long privateClean, long privateDirty, long anonymous, long referenced) {
+        public ProcSmaps(long size, long rss, long pss, long sharedClean, long sharedDirty, long privateClean, long privateDirty, long anonymous, long referenced, String permission) {
             this.size = size;
             this.rss = rss;
             this.pss = pss;
@@ -293,20 +297,108 @@ public class ProcFSUtils {
             this.privateDirty = privateDirty;
             this.anonymous = anonymous;
             this.referenced = referenced;
+            this.permission = permission;
+        }
+
+        private ProcSmaps(Builder builder) {
+            size = builder.size;
+            rss = builder.rss;
+            pss = builder.pss;
+            sharedClean = builder.sharedClean;
+            sharedDirty = builder.sharedDirty;
+            privateClean = builder.privateClean;
+            privateDirty = builder.privateDirty;
+            anonymous = builder.anonymous;
+            referenced = builder.referenced;
+            permission = builder.permission;
+        }
+
+        public static Builder newBuilder() {
+            return new Builder();
+        }
+
+        public static final class Builder {
+            private long size;
+            private long rss;
+            private long pss;
+            private long sharedClean;
+            private long sharedDirty;
+            private long privateClean;
+            private long privateDirty;
+            private long anonymous;
+            private long referenced;
+            private String permission;
+
+            private Builder() {
+            }
+
+            public Builder size(long val) {
+                size = val;
+                return this;
+            }
+
+            public Builder rss(long val) {
+                rss = val;
+                return this;
+            }
+
+            public Builder pss(long val) {
+                pss = val;
+                return this;
+            }
+
+            public Builder sharedClean(long val) {
+                sharedClean = val;
+                return this;
+            }
+
+            public Builder sharedDirty(long val) {
+                sharedDirty = val;
+                return this;
+            }
+
+            public Builder privateClean(long val) {
+                privateClean = val;
+                return this;
+            }
+
+            public Builder privateDirty(long val) {
+                privateDirty = val;
+                return this;
+            }
+
+            public Builder anonymous(long val) {
+                anonymous = val;
+                return this;
+            }
+
+            public Builder referenced(long val) {
+                referenced = val;
+                return this;
+            }
+
+            public Builder permission(String val) {
+                permission = val;
+                return this;
+            }
+
+            public ProcSmaps build() {
+                return new ProcSmaps(this);
+            }
         }
     }
 
-    public static ProcSmaps[] smaps(int[] pids, String[] exceptPermissions) throws IOException {
-        ProcSmaps[] smaps = new ProcSmaps[pids.length];
+    public static ProcSmaps[] smaps(int[] pids) throws IOException {
+        List<ProcSmaps> smaps = new ArrayList<>();
         for (int i = 0; i < pids.length; i++) {
-            smaps[i] = smaps(pids[i], exceptPermissions);
+            smaps.addAll(Arrays.asList(smaps(pids[i])));
         }
-        return smaps;
+        return smaps.toArray(new ProcSmaps[]{});
     }
 
-    public static ProcSmaps smaps(int pid, String[] exceptPermissions) throws IOException {
+    public static ProcSmaps[] smaps(int pid) throws IOException {
         String output = OSUtils.exec(new String[]{"cat", "/proc/" + pid + "/smaps"});
-        return parseSmaps(output, exceptPermissions);
+        return parseSmaps(output).toArray(new ProcSmaps[]{});
     }
 
     public static final String READ_ONLY_WITH_SHARED_PERMISSION = "r--s";
@@ -351,37 +443,21 @@ public class ProcFSUtils {
 
     private static final String KB = "kB";
 
-    protected static ProcSmaps parseSmaps(String output, String[] exceptPermissions) {
+    protected static List<ProcSmaps> parseSmaps(String output) {
         String[] lines = output.split("\n");
 
-        boolean allowedPermission = true;
-        long size = 0;
-        long rss = 0;
-        long pss = 0;
-        long sharedClean = 0;
-        long sharedDirty = 0;
-        long privateClean = 0;
-        long privateDirty = 0;
-        long anonymous = 0;
-        long referenced = 0;
+        List<ProcSmaps> res = new ArrayList<>();
+        ProcSmaps.Builder builder = null;
 
         for (String line : lines) {
             line = line.trim();
             Matcher address = ADDRESS_PATTERN.matcher(line);
             if (address.find()) {
                 String permission = address.group(4).trim();
-                allowedPermission = true;
-                // we use an array fo string vs a set because this array is guaranteed to be always
-                // very small (usually <= 2)
-                for (String p: exceptPermissions) {
-                    if (p.equals(permission)) {
-                        allowedPermission = false;
-                        break;
-                    }
+                if (builder != null) {
+                    res.add(builder.build());
                 }
-                continue;
-            }
-            if (!allowedPermission) {
+                builder = ProcSmaps.newBuilder().permission(permission);
                 continue;
             }
             Matcher memInfo = MEM_INFO_PATTERN.matcher(line);
@@ -397,43 +473,48 @@ public class ProcFSUtils {
                 }
 
                 MemInfo info = MemInfo.getMemInfoByName(key);
-                if (info == null) {
+                if (builder == null || info == null) {
                     continue;
                 }
 
                 switch (info) {
                     case SIZE:
-                        size += val * 1024;
+                        builder.size(val);
                         break;
                     case RSS:
-                        rss += val * 1024;
+                        builder.rss(val);
                         break;
                     case PSS:
-                        pss += val * 1024;
+                        builder.pss(val);
                         break;
                     case SHARED_CLEAN:
-                        sharedClean += val * 1024;
+                        builder.sharedClean(val);
                         break;
                     case SHARED_DIRTY:
-                        sharedDirty += val * 1024;
+                        builder.sharedDirty(val);
                         break;
                     case PRIVATE_CLEAN:
-                        privateClean += val * 1024;
+                        builder.privateClean(val);
                         break;
                     case PRIVATE_DIRTY:
-                        privateDirty += val * 1024;
+                        builder.privateDirty(val);
                         break;
                     case REFERENCED:
-                        referenced += val * 1024;
+                        builder.referenced(val);
                         break;
                     case ANONYMOUS:
-                        anonymous += val * 1024;
+                        builder.anonymous(val);
                         break;
                     default:
                         break;
                 }
             }
         }
-        return new ProcSmaps(size, rss, pss, sharedClean, sharedDirty, privateClean, privateDirty, anonymous, referenced);
+
+        if (builder != null) {
+            res.add(builder.build());
+        }
+
+        return res;
     }
 }
