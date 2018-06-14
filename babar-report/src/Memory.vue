@@ -32,7 +32,7 @@
         <div class="explanation">
           This graph shows the total memory used by all of your application's running containers at any given time. <br>
           <strong>Reserved memory</strong> is the amount of memory reserved on the infrastructure.<br>
-          <strong>RSS memory</strong> is the size of the memory pages that are loaded in the physical memory (RAM) for your containers process-tree (inclusing non JVM programs).<br>
+          <strong>RSS memory</strong> is the size of the memory pages that are loaded in the physical memory (RAM) for your containers process-tree (including non JVM programs).<br>
           <strong>Corrected RSS memory</strong> is the size of the memory pages that are loaded in the physical memory, excluding read-only shared pages (r--s or r-xs). 
           This is the memory accounted for by YARN if <samp class="conf-value">yarn.nodemanager.container-monitor.procfs-tree.smaps-based-rss.enabled</samp> 
           is <samp class="conf-value">true</samp>.
@@ -57,7 +57,7 @@
         <div class="explanation">
           This graph shows the maximum memory used and reserved by any container.<br>
           <strong>Reserved memory</strong> is the amount of memory reserved on the host, whether used or not.<br>
-          <strong>RSS memory</strong> is the size of the memory pages that are loaded in the physical memory (RAM) for the container's process-tree (inclusing non JVM programs).<br>
+          <strong>RSS memory</strong> is the size of the memory pages that are loaded in the physical memory (RAM) for the container's process-tree (including non JVM programs).<br>
           <strong>Corrected RSS memory</strong> is the size of the memory pages that are loaded in the physical memory, excluding read-only shared pages (r--s or r-xs). 
           This is the memory accounted for by YARN if <samp class="conf-value">yarn.nodemanager.container-monitor.procfs-tree.smaps-based-rss.enabled</samp> 
           is <samp class="conf-value">true</samp>.

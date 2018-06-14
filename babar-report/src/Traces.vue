@@ -14,7 +14,7 @@
 
                         <b-row>
                             <b-col lg="6">
-                                <b-form-group id="whitelistGroup" label="Whitelisted method-prefixes (comma-spearated)" label-for="whitelist">
+                                <b-form-group id="whitelistGroup" label="Whitelisted method-prefixes (comma-separated)" label-for="whitelist">
                                     <b-input-group>
                                         <b-form-input id="whitelist" type="text" v-model="whitelist" placeholder="eg: org.apache.hadoop.mapred,org.apache.spark" @change="updateTree" @blur="updateTree">
                                         </b-form-input>
@@ -22,7 +22,7 @@
                                 </b-form-group>
                             </b-col>
                             <b-col lg="6">
-                                <b-form-group id="blacklistGroup" label="Blacklisted method-prefixes (comma-spearated)" label-for="blacklist">
+                                <b-form-group id="blacklistGroup" label="Blacklisted method-prefixes (comma-separated)" label-for="blacklist">
                                     <b-input-group>
                                         <b-form-input id="blacklist" type="text" v-model="blacklist" placeholder="eg: org.apache.hadoop.net.unix,sun.nio.ch.EPoll" @change="updateTree" @blur="updateTree">
                                         </b-form-input>
@@ -33,7 +33,7 @@
 
                         <b-row>
                             <b-col lg="12">
-                                <b-form-group id="traceSearchGroup" label="Search for method-prefixes (commas-spearated)" label-for="traceSearch">
+                                <b-form-group id="traceSearchGroup" label="Search for method-prefixes (commas-separated)" label-for="traceSearch">
                                     <b-input-group>
                                         <b-form-input id="traceSearch" type="text" v-model="search" placeholder="eg: org.project.MyClass.myMethod" @change="updateTree" @blur="updateTree">
                                         </b-form-input>
