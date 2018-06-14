@@ -30,7 +30,7 @@ public class LogReporter extends Reporter {
             bw.newLine();
         }
         catch (IOException e) {
-            System.err.println("Exception thrown while tarting reporter");
+            System.err.println("Exception thrown while starting reporter");
             e.printStackTrace();
         }
     }
