@@ -177,7 +177,7 @@ public class ProcFSUtilsTest {
     
     @Test
     public void parseNetIO() throws Exception {
-        String output = "Inter-|   Receive                                                |  Transmit\n" + 
+        String outputProcNetDev = "Inter-|   Receive                                                |  Transmit\n" + 
         		" face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed\n" + 
         		" wlan0: 179407626  151664    0    0    0     0          0         0  9802910   66528    0    0    0     0       0          0\n" + 
         		"br-62486ecab361:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
@@ -189,19 +189,36 @@ public class ProcFSUtilsTest {
         		"docker0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
         		"br-456d4d6fea94:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n" + 
         		"br-943b2843c6cf:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0\n";
+        
+        String outputSysClassNet = "insgesamt 0\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:07 br-456d4d6fea94 -> ../../devices/virtual/net/br-456d4d6fea94\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:07 br-62486ecab361 -> ../../devices/virtual/net/br-62486ecab361\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:07 br-8fc5bc2e8e53 -> ../../devices/virtual/net/br-8fc5bc2e8e53\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:07 br-943b2843c6cf -> ../../devices/virtual/net/br-943b2843c6cf\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:07 br-c91c731c9737 -> ../../devices/virtual/net/br-c91c731c9737\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:07 br-fbe64819fc03 -> ../../devices/virtual/net/br-fbe64819fc03\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:07 docker0 -> ../../devices/virtual/net/docker0\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:17 eth0 -> ../../devices/pci0000:00/0000:00:19.0/net/eth0\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:06 lo -> ../../devices/virtual/net/lo\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:06 wlan0 -> ../../devices/pci0000:00/0000:00:1c.1/0000:03:00.0/net/wlan0\n";
 
-        ProcFSUtils.ProcNetIO io = ProcFSUtils.parseNetIO(output);
+        ProcFSUtils.ProcNetIO io = ProcFSUtils.parseNetIO(outputProcNetDev, outputSysClassNet);
 
-        assertEquals(14344962049L, io.rxBytes);
-        assertEquals(544370572L, io.txBytes);
+        assertEquals(14333429324L, io.rxBytes);
+        assertEquals(532837847L, io.txBytes);
     }
     
     @Test
     public void parseNetIONoInterfaces() throws Exception {
         String output = "Inter-|   Receive                                                |  Transmit\n" + 
         		" face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed\n";
+        
+        String outputSysClassNet = "insgesamt 0\n" +  
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:17 eth0 -> ../../devices/pci0000:00/0000:00:19.0/net/eth0\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:06 lo -> ../../devices/virtual/net/lo\n" + 
+        		"lrwxrwxrwx 1 root root 0 Jun 15 16:06 wlan0 -> ../../devices/pci0000:00/0000:00:1c.1/0000:03:00.0/net/wlan0\n";
 
-        ProcFSUtils.ProcNetIO io = ProcFSUtils.parseNetIO(output);
+        ProcFSUtils.ProcNetIO io = ProcFSUtils.parseNetIO(output, outputSysClassNet);
 
         assertEquals(0L, io.rxBytes);
         assertEquals(0L, io.txBytes);

@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -174,17 +175,19 @@ public class ProcFSUtils {
     }
 
     public static ProcNetIO netio() throws IOException {
-        String output = OSUtils.exec(new String[]{"cat", "/proc/net/dev"});
-        return parseNetIO(output);
+        String outputProcNetDev = OSUtils.exec(new String[]{"cat", "/proc/net/dev"});
+        String outputSysClassNet = OSUtils.exec(new String[]{"ls", "-l", "/sys/class/net"});
+        return parseNetIO(outputProcNetDev, outputSysClassNet);
     }
 
-    protected static ProcNetIO parseNetIO(String output) {
-    	String[] lines = output.split("\n");
+    protected static ProcNetIO parseNetIO(String outputProcNetDev, String outputSysClassNet) {
+    	List<String> realDevices = parseRealDevices(outputSysClassNet);
+    	String[] lines = outputProcNetDev.split("\n");
         if (!lines[0].startsWith("Inter-|")) {
-            throw new RuntimeException("Unexpected first line in output of /proc/dev/net:\n" + output);
+            throw new RuntimeException("Unexpected first line in output of /proc/dev/net:\n" + outputProcNetDev);
         }
 
-        if (lines.length < 3) {
+        if (lines.length < 2) {
             throw new RuntimeException("Not enough lines in output of /proc/dev/net");
         }
 
@@ -194,13 +197,29 @@ public class ProcFSUtils {
         for(int i=2; i < lines.length; i++) {
             String[] cols = lines[i].trim().split(" +"); //Trim leading spaces
 
-            if(cols.length == 17) {
+            if(cols.length == 17 && realDevices.contains(cols[0])) {
                 rxBytes += Long.parseLong(cols[1]);
                 txBytes += Long.parseLong(cols[9]);
             }
         }
 
         return new ProcNetIO(rxBytes, txBytes);
+	}
+
+	protected static List<String> parseRealDevices(String outputSysClassNet) {
+		List<String> realDevices = new LinkedList<>();
+		String[] lines = outputSysClassNet.split("\n");
+		
+		for(String line : lines) {
+			String[] cols = line.split(" +");
+			
+			if(cols.length == 11) {
+				if(!cols[10].startsWith("../../devices/virtual/net/")) {
+					realDevices.add(cols[8]+":");
+				}
+			}
+		}
+		return realDevices;
 	}
 
 	public static class ProcPidStat {
