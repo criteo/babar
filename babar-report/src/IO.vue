@@ -68,8 +68,8 @@ export default {
           _.assign({}, window.data["accumulated proc disk read bytes"], { name: "disk bytes read", color: Constants.LIGHT_BLUE})
         ], s => s.values),
         accumulatedBytesWrite: _.filter([
-          _.assign({}, window.data["accumulated proc write bytes"], { name: "bytes write", color: Constants.DARK_RED}),
-          _.assign({}, window.data["accumulated proc disk write bytes"], { name: "disk bytes write", color: Constants.ORANGE})
+          _.assign({}, window.data["accumulated proc write bytes"], { name: "bytes written", color: Constants.DARK_RED}),
+          _.assign({}, window.data["accumulated proc disk write bytes"], { name: "disk bytes written", color: Constants.ORANGE})
         ], s => s.values)
       }
     }
