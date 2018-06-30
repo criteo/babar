@@ -6,8 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -181,7 +182,7 @@ public class ProcFSUtils {
     }
 
     protected static ProcNetIO parseNetIO(String outputProcNetDev, String outputSysClassNet) {
-    	List<String> realDevices = parseRealDevices(outputSysClassNet);
+    	Set<String> realDevices = parseRealDevices(outputSysClassNet);
     	String[] lines = outputProcNetDev.split("\n");
         if (!lines[0].startsWith("Inter-|")) {
             throw new RuntimeException("Unexpected first line in output of /proc/dev/net:\n" + outputProcNetDev);
@@ -206,17 +207,15 @@ public class ProcFSUtils {
         return new ProcNetIO(rxBytes, txBytes);
 	}
 
-	protected static List<String> parseRealDevices(String outputSysClassNet) {
-		List<String> realDevices = new LinkedList<>();
+	protected static Set<String> parseRealDevices(String outputSysClassNet) {
+		Set<String> realDevices = new HashSet<>();
 		String[] lines = outputSysClassNet.split("\n");
 		
 		for(String line : lines) {
 			String[] cols = line.split(" +");
 			
-			if(cols.length == 11) {
-				if(!cols[10].startsWith("../../devices/virtual/net/")) {
-					realDevices.add(cols[8]+":");
-				}
+			if(cols.length == 11 && !cols[10].startsWith("../../devices/virtual/net/")) {
+				realDevices.add(cols[8]+":");
 			}
 		}
 		return realDevices;

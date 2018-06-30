@@ -11,7 +11,7 @@
       <b-container fluid>
         <PlotTimeSeries title="Network bytes received/transmitted / sec" yAxis="bytes/sec" :series="series.netIO" />
         <div class="explanation">
-          This graph shows the total number of bytes of data transmitted or received by all non-virtual interfaces by the entire process-tree as reported by the <kbd>/prod/net/dev</kbd> file.<br>
+          This graph shows the total number of bytes of data transmitted or received by all non-virtual interfaces by the entire process-tree as reported by the <kbd>/proc/net/dev</kbd> file.<br>
         </div>      
         <PlotTimeSeries title="Process tree peak bytes read / sec" yAxis="bytes/sec" :series="series.bytesRead" />
         <div class="explanation">
