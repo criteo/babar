@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -132,7 +134,6 @@ public class ProcFSUtils {
         return ios;
     }
 
-
     protected static ProcPidIO parsePidIO(String output) {
         String[] lines = output.split("\n");
         if (lines.length < 7) {
@@ -174,7 +175,53 @@ public class ProcFSUtils {
         return new ProcPidIO(rchar, wchar, readBytes, writeBytes);
     }
 
-    public static class ProcPidStat {
+    public static ProcNetIO netio() throws IOException {
+        String outputProcNetDev = OSUtils.exec(new String[]{"cat", "/proc/net/dev"});
+        String outputSysClassNet = OSUtils.exec(new String[]{"ls", "-l", "/sys/class/net"});
+        return parseNetIO(outputProcNetDev, outputSysClassNet);
+    }
+
+    protected static ProcNetIO parseNetIO(String outputProcNetDev, String outputSysClassNet) {
+    	Set<String> realDevices = parseRealDevices(outputSysClassNet);
+    	String[] lines = outputProcNetDev.split("\n");
+        if (!lines[0].startsWith("Inter-|")) {
+            throw new RuntimeException("Unexpected first line in output of /proc/dev/net:\n" + outputProcNetDev);
+        }
+
+        if (lines.length < 2) {
+            throw new RuntimeException("Not enough lines in output of /proc/dev/net");
+        }
+
+        long rxBytes = 0;
+        long txBytes = 0;
+
+        for(int i=2; i < lines.length; i++) {
+            String[] cols = lines[i].trim().split(" +"); //Trim leading spaces
+
+            if(cols.length == 17 && realDevices.contains(cols[0])) {
+                rxBytes += Long.parseLong(cols[1]);
+                txBytes += Long.parseLong(cols[9]);
+            }
+        }
+
+        return new ProcNetIO(rxBytes, txBytes);
+	}
+
+	protected static Set<String> parseRealDevices(String outputSysClassNet) {
+		Set<String> realDevices = new HashSet<>();
+		String[] lines = outputSysClassNet.split("\n");
+		
+		for(String line : lines) {
+			String[] cols = line.split(" +");
+			
+			if(cols.length == 11 && !cols[10].startsWith("../../devices/virtual/net/")) {
+				realDevices.add(cols[8]+":");
+			}
+		}
+		return realDevices;
+	}
+
+	public static class ProcPidStat {
         public final int pid;
         public final long userTicks;        // number of ticks in user mode
         public final long systemTicks;      // number of ticks in kernel mode
@@ -233,6 +280,16 @@ public class ProcFSUtils {
             this.wchar = wchar;
             this.readBytes = readBytes;
             this.writeBytes = writeBytes;
+        }
+    }
+    
+    public static class ProcNetIO {
+        public final long rxBytes;          // bytes received
+        public final long txBytes;          // bytes transmitted
+
+        public ProcNetIO(long rxBytes, long txBytes) {
+            this.rxBytes = rxBytes;
+            this.txBytes = txBytes;
         }
     }
 

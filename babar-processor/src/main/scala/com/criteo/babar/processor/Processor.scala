@@ -161,7 +161,7 @@ object Processor {
         (FilterMetric("JVM_GC_CPU_TIME") and DiscretizeTime(timePrecMs) and Scale(sec)
           aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
       // ----------------------------------- IO -------------------------------------
-      //max
+      // max
       "max proc peak read bytes / sec" ->
         (FilterMetric("PROC_TREE_RCHAR_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
           aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
@@ -200,6 +200,14 @@ object Processor {
       "accumulated proc disk write bytes" ->
         (FilterMetric("PROC_TREE_WRITE_BYTES") and DiscretizeTime(timePrecMs)
           aggregate SumByContainerAndTime() and AccumulateOverAllContainersByTime()),
+      // net io
+      "proc net rx bytes / sec" ->
+        (FilterMetric("PROC_TREE_RXBYTES_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
+      "proc net tx bytes / sec" ->
+        (FilterMetric("PROC_TREE_TXBYTES_PER_SEC") and DiscretizeTime(timePrecMs) and Scale(sec)
+          aggregate MaxByContainerAndTime() and MaxOverAllContainersByTime()),
+          
       // ------------------------------ Containers ----------------------------------
       "containers timeline" ->
         (FilterMetric("JVM_CPU_TIME") aggregate StartStopContainerTime()),

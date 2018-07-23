@@ -9,6 +9,10 @@
     <template v-if="isProcFSProfilerUsed">
     
       <b-container fluid>
+        <PlotTimeSeries title="Network bytes received/transmitted / sec" yAxis="bytes/sec" :series="series.netIO" />
+        <div class="explanation">
+          This graph shows the total number of bytes of data transmitted or received by all non-virtual interfaces by the entire system as reported by the <kbd>/proc/net/dev</kbd> file.<br>
+        </div>      
         <PlotTimeSeries title="Process tree peak bytes read / sec" yAxis="bytes/sec" :series="series.bytesRead" />
         <div class="explanation">
           This graph shows the peak bandwidth used to read data from disk I/O by the entire process-tree as reported by the <kbd>/proc/[pid]/io</kbd> file.<br>
@@ -53,6 +57,10 @@ export default {
       tab: "total",
       isProcFSProfilerUsed: window.data["isProcFSProfiler"],
       series: {
+        netIO: _.filter([
+          _.assign({}, window.data["proc net rx bytes / sec"], { name: "bytes received/sec", color: Constants.YELLOW, opacity: 0.5}),
+          _.assign({}, window.data["proc net tx bytes / sec"], { name: "bytes transmitted/sec", color: Constants.BLUE, opacity: 0.5})
+        ], s => s.values),
         bytesRead: _.filter([
           _.assign({}, window.data["max proc peak read bytes / sec"], { name: "max bytes read/sec", color: Constants.GREY}),
           _.assign({}, window.data["median proc peak read bytes / sec"], { name: "median bytes read/sec", color: Constants.DARK_BLUE}),
