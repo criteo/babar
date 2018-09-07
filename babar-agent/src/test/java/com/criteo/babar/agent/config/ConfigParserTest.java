@@ -14,10 +14,10 @@ public class ConfigParserTest {
 
     @Test
     public void parseKeyValues() throws Exception {
-        AgentConfig config = AgentConfig.parse("a=b,c=d");
+        AgentConfig config = AgentConfig.parse("a=b,c=d/e");
         assertEquals(2, config.mainConfig.size());
         assertEquals("b", config.mainConfig.get("a"));
-        assertEquals("d", config.mainConfig.get("c"));
+        assertEquals("d/e", config.mainConfig.get("c"));
         assertEquals(0, config.profilersConfig.size());
     }
 
