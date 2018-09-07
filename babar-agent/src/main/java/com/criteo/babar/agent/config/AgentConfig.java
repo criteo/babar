@@ -42,7 +42,7 @@ public class AgentConfig extends Config {
             }
         }
 
-        static String kv = "([a-zA-Z0-9_\\-\\.]+)=([a-zA-Z0-9:_\\-\\.]+)";
+        static String kv = "([a-zA-Z0-9_\\-\\.]+)=([a-zA-Z0-9:_\\-\\./]+)";
         static Pattern kvPattern = Pattern.compile("^("+kv+")(.*)$");
         static Pattern profilerPattern = Pattern.compile("^([a-zA-Z0-9_\\-\\.]+)(\\[(((" + kv + ")(,)?)*)\\])?(.*)$");
 
